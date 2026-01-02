@@ -1,0 +1,78 @@
+{
+  "name": "cochin-connect",
+  "version": "0.1.0",
+  "description": "Electron app that connects to Tally via ODBC and syncs company data",
+  "main": "main.js",
+  "build": {
+    "appId": "com.cochinconnect.app",
+    "productName": "Cochin Connect",
+    "directories": {
+      "buildResources": "build"
+    },
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "icon": "build/co-icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "server.js",
+      "renderer/**/*",
+      "build/**/*",
+      "package.json",
+      "!node_modules/.cache/**"
+    ],
+    "extraResources": [
+      {
+        "from": "renderer/public",
+        "to": "public"
+      },
+      {
+        "from": ".env",
+        "to": "env"
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Cochin Connect",
+      "artifactName": "${productName}(${version}).${ext}"
+    },
+    "asar": true
+  },
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "postinstall": "echo 'Install finished'"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "mongodb": "^7.0.0",
+    "odbc": "^2.4.0",
+    "nodemailer": "^6.9.3",
+    "react-dom": "^18.2.0",
+    "react-native-web": "^0.18.12"
+  },
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "electron-builder": "^26.0.12",
+    "nodemon": "^3.1.11"
+  }
+}

@@ -1,0 +1,1 @@
+SELECT $Name, $Parent, $OpeningBalance, $ClosingBalance FROM Ledger ORDER BY $Name ASC;

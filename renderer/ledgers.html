@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Ledgers — Tally Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=balance,checkbook,dashboard,diversity_3,inventory_2,pages,sheets_rtl" />
+    <script src="dark.js"></script>
+  </head>
+  <body class="h-full bg-slate-50 text-slate-800">
+    <div class="h-full flex">
+      <aside class="side-nav" style="min-height:100vh; width:260px; background:#1e40af; padding:20px;">
+        <div style="background-color: none; width: auto; margin: 0; border-radius: 10px; min-height: 50px;">
+          <div class="grid-logo">
+            <div class="sidebar-demo">
+              <div class="logo-1">
+                <div class="brand-name">
+                  <span>C</span><span>o</span><span>c</span><span>h</span><span>i</span><span>n</span>
+                </div>
+                  <div class="subtitle">CONNECT</div>
+              </div>
+              <div class="label">Tally is connected with ODBC server</div>
+            </div>
+          </div>
+        <nav class="space-y-1 text-sm" style="margin-top:30px;">
+          <div style="color:#93c5fd; font-size:11px; font-weight:600; margin:16px 0 8px 0;">MAIN</div>
+          <a href="index.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:white; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">dashboard</span>
+            <span>Dashboard</span>
+          </a>
+          <a href="companies.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">checkbook</span>
+            <span>Companies</span>
+          </a>
+          <div style="color:#93c5fd; font-size:11px; font-weight:600; margin:16px 0 8px 0;">COMPANY DATA</div>
+          <a href="ledgers.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none; background:#2563eb;">
+            <span class="material-symbols-outlined" style="font-size:20px;">checkbook</span>
+            <span>Ledgers</span>
+          </a>
+          <a href="parties.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">diversity_3</span>
+            <span>Parties</span>
+          </a>
+          <a href="stock.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">inventory_2</span>
+            <span>Stock Items</span>
+          </a>
+          <div style="color:#93c5fd; font-size:11px; font-weight:600; margin:16px 0 8px 0;">REPORTS</div>
+          <a href="reports.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">balance</span>
+            <span>Balancesheet</span>
+          </a>
+          <a href="reports.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">pages</span>
+            <span>Day Book</span>
+          </a>
+          <a href="reports.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">sheets_rtl</span>
+            <span>Profit & Loss A/C</span>
+          </a>
+        </nav>
+        <!-- <div style="border-radius: 50%; height: 400px; width: 100px;"></div>
+        <img src="./public/co_logo.png" alt="Cochin Traders Logo" class="mx-auto mt-12" style="width:180px; height:180px; border-radius:8px; object-fit:contain;" />
+        <h6>COCHIN TRADERS</h6> -->
+        </div>
+      </aside>
+
+      <main class="flex-1 p-6 overflow-auto">
+        <header class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold" style="color: #000;">Ledgers</h1>
+            <div class="text-sm text-gray-500">List of Ledgers for particular company</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-sm text-gray-600">
+              <span id="activeCompanyName" style="font-weight: 600; color: #059669;">Tally @ PORT:9000</span>
+            </div>
+            <div class="flex items-center ml-3">
+              <input id="navThemeToggle" type="checkbox" class="hidden" />
+              <button id="navThemeBtn" aria-label="Toggle theme" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200">🌙</button>
+            </div>
+          </div>
+        </header>
+
+        <section>
+          <div class="filter-container">
+            <div class="filter-grid">
+              <div class="filter-field">
+                <label class="filter-label">Select Company</label>
+                <select id="companySelect" class="filter-select"></select>
+              </div>
+              <div class="filter-field">
+                <label class="filter-label">Jump to Category</label>
+                <select id="categorySelect" class="filter-select"><option disabled value="">All Categories</option></select>
+              </div>
+              <div class="filter-field">
+                <label class="filter-label">Find Ledger</label>
+                <input id="ledgerFilterInput" type="search" placeholder="Type ledger name to filter (partial match)" class="filter-input" />
+              </div>
+            </div>
+          </div>
+          <!-- <div class="flex justify-content-between items-center mb-12 gap-4 flex-wrap p-3" style="background-color: #fff; box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px; border-radius: 8px; background: #396afc; border: none;">
+            <div class="mb-6" style="min-width: 30%;">
+     
+            </div>
+            <div class="mb-6" style="min-width: 50%;">
+           
+            </div>
+            <div class="mb-6" style="min-width: 37%;">
+
+            </div>
+          </div> -->
+          <div id="ledgersContainer">
+            <div class="text-sm text-gray-500">Select a company to view ledgers.</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      // ledgers page: populate company select from localStorage or API
+      const companySelect = document.getElementById('companySelect')
+      const ledgersContainer = document.getElementById('ledgersContainer')
+
+      function getStoredCompanies(){
+            try{ const s = localStorage.getItem('companiesList'); return s? JSON.parse(s): null }catch(e){ return null }
+      }
+
+          async function ensureCompanies(){
+            // Always refresh company list from DB when this page loads
+            try{ localStorage.removeItem('companiesList') }catch(e){}
+
+            try{
+              const res = await fetch('http://localhost:3000/api/company-names')
+              if (!res.ok) throw new Error('Failed to fetch company names')
+              const json = await res.json()
+              const list = (json && json.success && Array.isArray(json.data)) ? json.data.map(r=>({ companyName: r.companyName || '', lastSyncedAt: r.lastSyncedAt || null })) : []
+              try{ localStorage.setItem('companiesList', JSON.stringify(list)) }catch(e){}
+              return list
+            } catch (err) {
+              console.error('Could not refresh company names:', err)
+              // fallback to whatever was previously stored (if any)
+              const stored = getStoredCompanies() || []
+              return stored
+            }
+          }
+
+      function populateCompanySelect(list){
+        companySelect.innerHTML = '<option disabled value="">Select company</option>'
+        list.forEach(c=>{
+          const opt = document.createElement('option')
+          opt.value = c.companyName || (c.companyDetails && c.companyDetails.companyName) || ''
+          opt.textContent = opt.value
+          companySelect.appendChild(opt)
+        })
+      }
+
+      function normalizeParent(p){
+        if(!p) return ''
+        return String(p).trim().toLowerCase()
+      }
+
+      function classifyParent(parent){
+        const p = normalizeParent(parent)
+
+        // Exact matches first
+        const exactMap = {
+          'sundry creditors': 'Sundry Creditors',
+          'sundry creditors (current liabilities)': 'Sundry Creditors',
+          'sundry debtors': 'Sundry Debtors',
+          'sundry debtors (current assets)': 'Sundry Debtors',
+          'purchase accounts': 'Purchase Accounts',
+          'purchase': 'Purchase Accounts',
+          'sales accounts': 'Sales Accounts',
+          'sales': 'Sales Accounts',
+          'capital account': 'Capital Accounts',
+          'capital accounts': 'Capital Accounts',
+          'capital a/cs': 'Capital Accounts',
+          'duties & taxes': 'Duties & Taxes',
+          'duties and taxes': 'Duties & Taxes',
+          'bank accounts': 'Bank Accounts',
+          'bank': 'Bank Accounts',
+          'cash-in-hand': 'Cash-in-Hand',
+          'cash in hand': 'Cash-in-Hand',
+          'stock-in-hand': 'Stock-in-Hand',
+          'stock in hand': 'Stock-in-Hand',
+          'fixed assets': 'Fixed Assets',
+          'salary account': 'Salary Account',
+          'misc. expenses': 'Misc. Expenses',
+          'misc expenses': 'Misc. Expenses',
+          'indirect expenses': 'Indirect Expenses',
+          'direct expenses': 'Direct Expenses',
+          'indirect incomes': 'Indirect Incomes',
+          'direct incomes': 'Direct Incomes'
+        }
+
+        if (p in exactMap) return exactMap[p]
+
+        // Keyword matching fallback
+        const categories = [
+          {name:'Indirect Expenses', keywords:['indirect expense','indirect expenses']},
+          {name:'Direct Expenses', keywords:['direct expense','direct expenses']},
+          {name:'Indirect Incomes', keywords:['indirect income','indirect incomes']},
+          {name:'Direct Incomes', keywords:['direct income','direct incomes']},
+          {name:'Salary Account', keywords:['salary']},
+          {name:'Purchase Accounts', keywords:['purchase']},
+          {name:'Sales Accounts', keywords:['sale','sales']},
+          {name:'Capital Accounts', keywords:['capital']},
+          {name:'Duties & Taxes', keywords:['duty','tax']},
+          {name:'Bank Accounts', keywords:['bank']},
+          {name:'Cash-in-Hand', keywords:['cash-in-hand','cash in hand','cash']},
+          {name:'Stock-in-Hand', keywords:['stock-in-hand','stock in hand','stock']},
+          {name:'Fixed Assets', keywords:['fixed asset','fixed assets']},
+          {name:'Misc. Expenses', keywords:['misc','miscellaneous','other','others']}
+        ]
+        for(const cat of categories){
+          for(const kw of cat.keywords){
+            if(p.includes(kw)) return cat.name
+          }
+        }
+        return 'Other'
+      }
+
+      function renderLedgers(ledgers){
+        const groups = {}
+        ledgers.forEach(l=>{
+          const parent = l.ParentGroup || l.Parent || l['$_PrimaryGroup'] || l.PrimaryGroup || l.Parent || ''
+          const cat = classifyParent(parent)
+          if(!groups[cat]) groups[cat] = []
+          groups[cat].push(l)
+        })
+        // render
+        ledgersContainer.innerHTML = ''
+        const sectionsMap = {}
+        const categorySelect = document.getElementById('categorySelect')
+        // clear previous category options
+        if(categorySelect) categorySelect.innerHTML = '<option disabled value="">All Categories</option>'
+
+        Object.keys(groups).forEach(cat=>{
+          const section = document.createElement('div')
+          section.className = 'card mb-4 rounded drop-down'
+
+          const header = document.createElement('div')
+          header.className = 'flex items-center justify-between cursor-pointer'
+          header.style.paddingBottom = '8px'
+          header.style.alignItems = 'center'
+
+          const title = document.createElement('div')
+          title.className = 'font-semibold'
+          title.textContent = cat + ' (' + groups[cat].length + ')'
+
+          const caret = document.createElement('div')
+          caret.innerHTML = '▾'
+          caret.style.opacity = '0.8'
+
+          header.appendChild(title)
+          header.appendChild(caret)
+          section.appendChild(header)
+
+          const list = document.createElement('ul')
+          list.className = 'space-y-1'
+          list.style.marginTop = '8px'
+
+          groups[cat].forEach(item=>{
+            const li = document.createElement('li')
+            li.className = 'p-3 border-b'
+
+            const name = item.LedgerName || item.$Name || item.Name || item.Ledger || 'Unnamed'
+            const parentRaw = item.Parent || item.ParentGroup || item.$Parent || ''
+            const primary = item.PrimaryGroup || item['$_PrimaryGroup'] || item.Primary || ''
+            const closing = item.ClosingBalance ?? item.Closing ?? item.$ClosingBalance ?? null
+            const opening = item.OpeningBalance ?? item.Opening ?? item.$OpeningBalance ?? null
+            const address = item.Address || item.$Address || ''
+            const email = item.Email || item.$Email || ''
+            const phone = item.Phone || item.$Phone || ''
+            const mailing = item.MailingName || item.$MailingName || ''
+
+            function formatBalance(v){
+              // Default missing balances to 0.00
+              if (v === null || v === undefined || v === '') return '0.00'
+              const n = Number(String(v).replace(/[^0-9.-]+/g, ''))
+              if (Number.isFinite(n)) return n.toFixed(2)
+              return '0.00'
+            }
+
+            const openingFmt = formatBalance(opening)
+            const closingFmt = formatBalance(closing)
+
+            li.innerHTML = `
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1">
+                  <div class="font-semibold">${name}</div>
+                  ${mailing? `<div class="text-sm text-gray-600">${mailing}</div>`: ''}
+                  <div class="text-xs text-gray-500 mt-1">Parent: ${parentRaw || '-'}${primary? ' · Primary: '+primary: ''}</div>
+                  <div class="text-sm text-gray-700 mt-2">Opening: ${openingFmt} · Closing: ${closingFmt}</div>
+                  ${address? `<div class="text-xs text-gray-500 mt-1">${address}</div>`: ''}
+                  ${email? `<div class="text-xs text-gray-500 mt-1">Email: ${email}</div>`: ''}
+                  ${phone? `<div class="text-xs text-gray-500 mt-1">Phone: ${phone}</div>`: ''}
+                </div>
+              </div>
+            `
+
+            // store lowercase ledger name for fast filtering and reference
+            const ledgerName = name || ''
+            li.dataset.ledgerName = ledgerName
+            li.dataset.ledgerNameLower = String(ledgerName).toLowerCase()
+            list.appendChild(li)
+          })
+
+          // start collapsed by default
+          list.style.display = 'none'
+
+          // toggle logic
+          header.addEventListener('click', ()=>{
+            const visible = list.style.display !== 'none'
+            list.style.display = visible? 'none' : 'block'
+            caret.innerHTML = visible? '▾' : '▴'
+          })
+
+          section.appendChild(list)
+          ledgersContainer.appendChild(section)
+
+          sectionsMap[cat] = { section, list, header }
+
+          // add to category select
+          if(categorySelect){
+            const opt = document.createElement('option')
+            opt.value = cat
+            opt.textContent = cat + ' (' + groups[cat].length + ')'
+            categorySelect.appendChild(opt)
+          }
+        })
+
+        // --- Ledger filter and category-jump behavior ---
+        const ledgerFilterInput = document.getElementById('ledgerFilterInput')
+        const categoryJumpInput = document.getElementById('categoryJumpInput')
+
+        function applyLedgerFilter(){
+          const q = ledgerFilterInput && ledgerFilterInput.value ? ledgerFilterInput.value.trim().toLowerCase() : ''
+          const sections = Object.values(sectionsMap)
+          let totalMatches = 0
+          sections.forEach(s=>{
+            const lis = Array.from(s.list.querySelectorAll('li'))
+            let visibleCount = 0
+            lis.forEach(li => {
+              const name = li.dataset.ledgerNameLower || ''
+              const match = !q || name.includes(q)
+              li.style.display = match ? '' : 'none'
+              if(match) visibleCount++
+            })
+            // show/hide whole section depending on children
+            s.section.style.display = visibleCount>0 ? '' : 'none'
+            totalMatches += visibleCount
+          })
+
+          // if exactly one match, scroll and highlight it
+          if(totalMatches === 1){
+            for(const s of Object.values(sectionsMap)){
+              const found = s.list.querySelector('li:not([style*="display: none"])')
+              if(found){
+                found.scrollIntoView({behavior:'smooth', block:'center'})
+                const orig = found.style.background
+                found.style.background = 'rgba(250, 204, 21, 0.12)'
+                setTimeout(()=> { found.style.background = orig }, 2200)
+                break
+              }
+            }
+          }
+        }
+
+        if(ledgerFilterInput){
+          ledgerFilterInput.addEventListener('input', ()=> applyLedgerFilter())
+          ledgerFilterInput.addEventListener('keydown', (e)=>{
+            if(e.key === 'Enter'){
+              const first = ledgersContainer.querySelector('li:not([style*="display: none"])')
+              if(first) first.scrollIntoView({behavior:'smooth', block:'center'})
+            }
+          })
+        }
+
+        if(categoryJumpInput){
+          categoryJumpInput.addEventListener('keydown', (e)=>{
+            if(e.key === 'Enter'){
+              const q = categoryJumpInput.value.trim().toLowerCase()
+              if(!q) return
+              const opts = Array.from(categorySelect.options)
+              const matchOpt = opts.find(o=> (o.textContent||'').toLowerCase().includes(q) || (o.value||'').toLowerCase().includes(q))
+              if(matchOpt){
+                categorySelect.value = matchOpt.value
+                categorySelect.dispatchEvent(new Event('change'))
+              } else {
+                const sw = opts.find(o=> (o.textContent||'').toLowerCase().startsWith(q))
+                if(sw){ categorySelect.value = sw.value; categorySelect.dispatchEvent(new Event('change')) }
+              }
+            }
+          })
+        }
+
+        // category select change: open and scroll to section
+        if(categorySelect){
+          categorySelect.addEventListener('change', ()=>{
+            const val = categorySelect.value
+            if(!val){
+              // collapse all
+              Object.values(sectionsMap).forEach(s=>{ s.list.style.display='none'; s.header.querySelector('div:last-child')?.innerHTML && (s.header.querySelector('div:last-child').innerHTML='▾') })
+              return
+            }
+            const target = sectionsMap[val]
+            if(target){
+              // expand target and collapse others
+              Object.keys(sectionsMap).forEach(k=>{
+                const s = sectionsMap[k]
+                s.list.style.display = (k===val)? 'block':'none'
+                s.header.querySelector('div:last-child')?.innerHTML && (s.header.querySelector('div:last-child').innerHTML = (k===val)? '▴':'▾')
+              })
+              // scroll into view
+              target.section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          })
+        }
+      }
+
+      companySelect.addEventListener('change', async ()=>{
+        const name = companySelect.value
+        if(!name) { ledgersContainer.innerHTML = '<div class="text-sm text-gray-500">Select a company to view ledgers.</div>'; return }
+        ledgersContainer.innerHTML = `
+          <div>
+            ${Array.from({length:4}).map(()=>`<div class="card mb-4 skeleton-section">
+              <div class="skeleton-line skeleton-title"></div>
+              <div class="skeleton-line skeleton-item"></div>
+              <div class="skeleton-line skeleton-item"></div>
+              <div class="skeleton-line skeleton-item"></div>
+            </div>`).join('')}
+          </div>
+        `
+        try{
+          const res = await fetch('http://localhost:3000/api/ledgers/' + encodeURIComponent(name))
+          const json = await res.json()
+          const ledgers = json.data || json
+          renderLedgers(ledgers)
+        }catch(err){ ledgersContainer.innerHTML = '<div class="p-4 text-sm text-red-500">Error: '+(err.message||err)+'</div>' }
+      })
+
+      ;(async ()=>{
+        const list = await ensureCompanies()
+        populateCompanySelect(list)
+        if(list && list.length>0){
+          companySelect.value = list[0].companyName || (list[0].companyDetails && list[0].companyDetails.companyName) || ''
+          companySelect.dispatchEvent(new Event('change'))
+        }
+      })()
+    </script>
+  </body>
+</html>

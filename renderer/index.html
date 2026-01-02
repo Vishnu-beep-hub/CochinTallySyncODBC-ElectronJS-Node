@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dashboard — Tally Connect</title>
+    <link rel="icon" href="./public/co_logo.png" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=balance,cached,checkbook,dashboard,database,delete,diversity_3,inventory_2,pages,sheets_rtl,visibility" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Rubik+Glitch+Pop&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      @keyframes shimmer {
+        0% { background-position: -400% 0; }
+        100% { background-position: 400% 0; }
+      }
+      .skeleton-shimmer {
+        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+        background-size: 400% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+      }
+      /* Enhanced logo container design */
+      .logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 14px 8px;
+        margin: 12px;
+        border-radius: 10px;
+        color: #fff;
+        background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+        box-shadow: 0 6px 18px rgba(2,6,23,0.12) inset;
+      }
+      .logo-container .heading1{
+        font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        font-size: 34px;
+        line-height: 0.9;
+      }
+      .logo-container .heading2{
+        display:block;
+        font-size:11px;
+        font-weight:700;
+        color: rgba(255,255,255,0.85);
+        margin-top:2px;
+        letter-spacing:2px;
+      }
+
+      /* KPI count skeleton that visually matches the card background */
+      .count-skeleton {
+        height: 36px;
+        border-radius: 8px;
+        width: 64px;
+        margin: 0 0 6px 0;
+        display: inline-block;
+        vertical-align: middle;
+        opacity: 0.95;
+      }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+    <script src="dark.js"></script>
+  </head>
+  <body class="h-full bg-slate-50 text-slate-800">
+    <div class="h-full flex">
+      <aside class="side-nav" style="min-height:100vh; width:260px; background:#1e40af; padding: 0;">
+        <div style="background-color: none; width: auto; margin: 0; border-radius: 10px; min-height: 50px;">
+          <div class="grid-logo">
+            <div class="sidebar-demo">
+              <div class="logo-1">
+                <div class="brand-name">
+                  <span>C</span><span>o</span><span>c</span><span>h</span><span>i</span><span>n</span>
+                </div>
+                  <div class="subtitle">CONNECT</div>
+              </div>
+              <div class="label">Tally is connected with ODBC server</div>
+            </div>
+          </div>
+        <nav class="space-y-1 text-sm" style="margin-top:30px;">
+          <div style="color:#93c5fd; font-size:11px; font-weight:600; margin:16px 0 8px 0;">MAIN</div>
+          <a href="index.html" style="display:flex; align-items:center; gap:10px; padding:10px; background:#2563eb; border-radius:6px; color:white; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">dashboard</span>
+            <span>Dashboard</span>
+          </a>
+          <a href="companies.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">checkbook</span>
+            <span>Companies</span>
+          </a>
+          <div style="color:#93c5fd; font-size:11px; font-weight:600; margin:16px 0 8px 0;">COMPANY DATA</div>
+          <a href="ledgers.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">checkbook</span>
+            <span>Ledgers</span>
+          </a>
+          <a href="parties.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">diversity_3</span>
+            <span>Parties</span>
+          </a>
+          <a href="stock.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">inventory_2</span>
+            <span>Stock Items</span>
+          </a>
+          <div style="color:#93c5fd; font-size:11px; font-weight:600; margin:16px 0 8px 0;">REPORTS</div>
+          <a href="reports.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">balance</span>
+            <span>Balancesheet</span>
+          </a>
+          <a href="reports.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">pages</span>
+            <span>Day Book</span>
+          </a>
+          <a href="reports.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
+            <span class="material-symbols-outlined" style="font-size:20px;">sheets_rtl</span>
+            <span>Profit & Loss A/C</span>
+          </a>
+        </nav>
+        <!-- <div style="border-radius: 50%; height: 400px; width: 100px;"></div>
+        <img src="./public/co_logo.png" alt="Cochin Traders Logo" class="mx-auto mt-12" style="width:180px; height:180px; border-radius:8px; object-fit:contain;" />
+        <h6>COCHIN TRADERS</h6> -->
+        </div>
+      </aside>
+
+      <main class="flex-1 p-6 overflow-auto">
+        <header class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold" style="color: #000;">Dashboard</h1>
+            <div class="text-sm text-gray-500">Manage and sync your companies</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-sm text-gray-600">
+              <span id="activeCompanyName" style="font-weight: 600; color: #059669;">Tally @ PORT:9000</span>
+            </div>
+            <div class="flex items-center ml-3">
+              <input id="navThemeToggle" type="checkbox" class="hidden" />
+              <button id="navThemeBtn" aria-label="Toggle theme" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200">🌙</button>
+            </div>
+          </div>
+        </header>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:32px;">
+          <div style="background:#3b82f6; color:white; padding:20px; border-radius:12px;">
+            <div style="font-size:12px; opacity:0.9;">Total Companies</div>
+            <div style="font-size:32px; font-weight:700; margin:8px 0;" id="totalCompanies">0</div>
+            <div style="font-size:12px; opacity:0.9;">Synced to Database</div>
+          </div>
+          <div style="background:#10b981; color:white; padding:20px; border-radius:12px;">
+            <div style="font-size:12px; opacity:0.9;">Total Ledgers</div>
+            <div style="font-size:32px; font-weight:700; margin:8px 0;" id="totalLedgers">0</div>
+            <div style="font-size:12px; opacity:0.9;">Across All Companies</div>
+          </div>
+          <div style="background:#f59e0b; color:white; padding:20px; border-radius:12px;">
+            <div style="font-size:12px; opacity:0.9;">Total Stocks</div>
+            <div style="font-size:32px; font-weight:700; margin:8px 0;" id="totalStocks">0</div>
+            <div style="font-size:12px; opacity:0.9;">Inventory Items</div>
+          </div>
+          <div style="background:#a855f7; color:white; padding:20px; border-radius:12px;">
+            <div style="font-size:12px; opacity:0.9;">Total Parties</div>
+            <div style="font-size:32px; font-weight:700; margin:8px 0;" id="totalParties">0</div>
+            <div style="font-size:12px; opacity:0.9;">Debtors & Creditors</div>
+          </div>
+        </div>
+        
+        <section>
+          <div class="flex justify-between items-center mb-4">
+            <h3 style="color: #000; font-weight: 600; font-size: 18px;">Companies List [<strong id="totalCompaniesInGrid" style="padding: 0 8px;">0</strong>]</h3>
+            <button id="refreshBtn" onclick="loadCompanies()" class="px-2 py-2 rounded btn" style="border-radius: 15px;">
+              <span class="material-symbols-outlined" id="refresh-icon">cached</span>
+            </button>
+          </div>
+          
+          <div id="companiesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+      <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; margin: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        <div id="modalContent"></div>
+        <div style="margin-top: 20px; text-align: right;">
+          <button onclick="closeModal()" class="px-4 py-2 rounded btn" style="background: #e5e7eb; border: none; cursor: pointer;">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // document.getElementById('refreshBtn').addEventListener('click', function() {
+      //   this.classList.add('spin')
+      //   setTimeout(() => this.classList.remove('spin'), 500)
+      // })
+      function startRefreshAnimation() {
+        const icon = document.getElementById('refresh-icon');
+        // Add the spin class to start the animation
+        icon.classList.add('spin');
+
+        // Remove the class after the animation finishes
+        // Keep spinning for 1000ms (1s)
+        setTimeout(() => {
+          icon.classList.remove('spin');
+        }, 1000);
+      }
+      
+      function showModal(content) {
+        document.getElementById('modalContent').innerHTML = content
+        document.getElementById('modal').style.display = 'flex'
+      }
+
+      function closeModal() {
+        document.getElementById('modal').style.display = 'none'
+      }
+
+      function showNotification(message, type = 'info') {
+        const colors = {
+          success: '#10b981',
+          error: '#ef4444',
+          info: '#3b82f6',
+          warning: '#f59e0b'
+        }
+        
+        const notif = document.createElement('div')
+        notif.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 15px 20px;
+          border-radius: 8px;
+          background: white;
+          border-left: 4px solid ${colors[type] || colors.info};
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          z-index: 10000;
+        `
+        notif.innerHTML = `<div style="font-weight: 600;">${message}</div>`
+        document.body.appendChild(notif)
+        setTimeout(() => notif.remove(), 3000)
+      }
+
+      function makeCard(c, isActive = false) {
+        const name = c.companyName || 'Unknown'
+        const metaLedgers = (c.ledgers || []).length || 0
+        const metaParties = (c.parties || []).length || 0
+        const metaStocks = (c.stocks || []).length || 0
+        const hasSyncedData = metaLedgers > 0 || metaParties > 0 || metaStocks > 0
+        const savedLimited = !!c._savedLimited || (!hasSyncedData && !!c._persisted)
+        
+        const el = document.createElement('div')
+        el.className = 'card rounded shadow'
+        el.style.cssText = `
+          padding: 16px;
+          background: ${isActive ? '#f0fdf4' : '#fff'};
+          border: ${isActive ? '2px solid #059669' : '1px solid #e5e7eb'};
+        `
+        
+        el.innerHTML = `
+          <div style="margin-bottom:12px;">
+            <div style="font-weight: 600; margin-bottom: 4px; font-size:15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              <span style="white-space: nowrap; width: 100px; overflow: hidden; text-overflow: ellipsis;">${name}</span>
+              <br />
+              ${isActive ? '<span style="background:#059669;color:white;font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px;">ACTIVE</span>' : ''}
+              ${!hasSyncedData ? '<span style="background:#dc2626;color:white;font-size:10px;padding:2px 6px;border-radius:4px;">NOT SYNCED</span>' : ''}
+              ${hasSyncedData ? '<span style="background:#3b82f6;color:white;font-size:10px;padding:2px 6px;border-radius:4px;">SYNCED</span>' : ''}
+            </div>
+            <div style="font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${hasSyncedData ? `${name} is in both database and tally. We can update the data` : `${name} is only in Tally. Sync to save details to database.`}
+            </div>
+          </div>
+          <div style="display:flex; gap:9px; text-align:center;">
+            <button class="sync px-3 py-1 rounded text-sm btn" style="background:#059669;color:white; border:none; cursor:pointer; text-align:center;">Sync <span class="material-symbols-outlined">database</span></button>
+            ${savedLimited ? '<button class="fetch-data px-3 py-1 rounded text-sm btn" style="background:#f59e0b;color:white;flex:1; border:none; cursor:pointer; text-align:center;">📥 Fetch Data</button>' : ''}
+            ${hasSyncedData ? '<button class="view px-3 py-1 rounded text-sm btn" style="background:#3b82f6;color:white; border:none; cursor:pointer;text-align:center;"><span class="material-symbols-outlined">visibility</span></button>' : "" }
+            ${hasSyncedData ? '<button class="delete-btn px-3 py-1 rounded text-sm btn" style="background:#dc2626;color:white; border:none; cursor:pointer; text-align:center;">Delete<span class="material-symbols-outlined">delete</span></button>' : ''}
+          </div>
+        `
+        el._payload = c
+        el._isActive = isActive
+        return el
+      }
+
+      function makeSkeletonCard(c) {
+        const name = c.companyName || 'Unknown'
+        const el = document.createElement('div')
+        el.className = 'card rounded shadow'
+        el.style.cssText = 'padding: 16px; background: #fff; border: 1px solid #e5e7eb;'
+        el.innerHTML = `
+          <div style="margin-bottom:12px;">
+            <div style="font-weight: 600; margin-bottom: 8px; font-size:15px;">${name}</div>
+            <div style="font-size: 12px; color: #9ca3af;">Checking database...</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <div class="skeleton-shimmer" style="flex:1; height:34px; border-radius:6px;"></div>
+            <div class="skeleton-shimmer" style="flex:1; height:34px; border-radius:6px;"></div>
+          </div>
+        `
+        el._payload = c
+        return el
+      }
+
+      async function deleteCompany(companyName) {
+        showModal(`
+          <h3 style="margin:0 0 12px 0; font-size:18px; font-weight:600; color:#dc2626;">⚠️ Delete Company Data</h3>
+          <div style="padding:14px; background:#fee2e2; border-left:4px solid #dc2626; border-radius:6px; margin-bottom:16px;">
+            <div style="font-size:14px; margin-bottom:8px;">Are you sure you want to delete <strong>"${companyName}"</strong> from the database?</div>
+            <div style="font-size:13px; color:#991b1b;">This will permanently remove all synced ledgers, stocks, and parties data. This action cannot be undone.</div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button id="cancelDeleteBtn" class="px-3 py-1 rounded" style="background:#e5e7eb; border:none; cursor:pointer;">Cancel</button>
+            <button id="confirmDeleteBtn" class="px-3 py-1 rounded" style="background:#dc2626;color:white; border:none; cursor:pointer;">Delete</button>
+          </div>
+        `)
+
+        setTimeout(() => {
+          const cancelBtn = document.getElementById('cancelDeleteBtn')
+          const confirmBtn = document.getElementById('confirmDeleteBtn')
+          
+          if (cancelBtn) cancelBtn.addEventListener('click', closeModal)
+          
+          if (confirmBtn) {
+            confirmBtn.addEventListener('click', async () => {
+              closeModal()
+              showModal('<div style="padding:40px;text-align:center;"><div style="font-size:32px;margin-bottom:16px;">⏳</div><div>Deleting company data...</div></div>')
+              
+              try {
+                const res = await fetch(`http://localhost:3000/api/company/${encodeURIComponent(companyName)}`, {
+                  method: 'DELETE'
+                })
+                
+                const json = await res.json()
+                
+                if (res.ok && json.success) {
+                  showModal(`
+                    <h3 style="margin:0 0 12px 0; font-size:18px; color:#059669; font-weight:600;">✅ Deleted Successfully</h3>
+                    <div style="font-size:14px;color:#666;margin-bottom:16px;">Company "${companyName}" has been removed from the database.</div>
+                  `)
+                  
+                  showNotification('Company deleted successfully!', 'success')
+                  
+                  setTimeout(() => {
+                    closeModal()
+                    loadCompanies()
+                  }, 1500)
+                } else {
+                  showModal(`
+                    <h3 style="margin:0 0 12px 0; font-size:18px; color:#dc2626; font-weight:600;">❌ Delete Failed</h3>
+                    <div style="padding:14px; background:#fee2e2; border-radius:6px;">
+                      <div style="font-size:14px;">${json.error || 'Unknown error occurred'}</div>
+                    </div>
+                  `)
+                }
+              } catch (err) {
+                console.error('Delete error:', err)
+                showModal(`
+                  <h3 style="margin:0 0 12px 0; font-size:18px; color:#dc2626; font-weight:600;">❌ Delete Error</h3>
+                  <div style="padding:14px; background:#fee2e2; border-radius:6px;">
+                    <div style="font-size:14px;">Failed to delete company: ${err.message}</div>
+                  </div>
+                `)
+              }
+            })
+          }
+        }, 50)
+      }
+
+      async function loadCompanies() {
+        // startRefreshAnimation()
+        const gridEl = document.getElementById('companiesGrid')
+        if (!gridEl) return console.error('companiesGrid element not found')
+
+        try {
+          const res = await fetch('http://localhost:3000/api/tally-companies')
+          if (!res.ok) throw new Error(await res.text())
+          const json = await res.json()
+          const companies = json.data || []
+
+          gridEl.innerHTML = ''
+
+          if (companies.length === 0) {
+            gridEl.innerHTML = `
+              <div style="grid-column: 1/-1; padding:40px; text-align:center;">
+                <div style="font-size:48px;margin-bottom:16px;">📊</div>
+                <div style="font-size:18px;font-weight:600;margin-bottom:8px;color:#000;">No Companies Found in Tally</div>
+                <div style="color:#666;margin-bottom:16px;">Open Tally Prime to view companies or ensure ODBC is configured correctly.</div>
+              </div>
+            `
+            return
+          }
+
+          let totalLedgers = 0, totalStocks = 0, totalParties = 0
+
+          companies.sort((a, b) => (a.companyName||'').toLowerCase().localeCompare((b.companyName||'').toLowerCase()))
+
+          // Show skeleton cards initially
+          for (const c of companies) {
+            const skeletonCard = makeSkeletonCard(c)
+            gridEl.appendChild(skeletonCard)
+          }
+
+          // Fetch data for each company and replace skeleton
+          const fetchPromises = companies.map(async (c, index) => {
+            const name = c.companyName || ''
+            const cards = gridEl.querySelectorAll('.card')
+            const cardRef = cards[index]
+            
+            if (!cardRef) return
+
+            try {
+              const r = await fetch(`http://localhost:3000/api/company/${encodeURIComponent(name)}`)
+              
+              let hasData = false
+              if (r.ok) {
+                const pj = await r.json()
+                if (pj.success && pj.data) {
+                  const data = pj.data
+                  cardRef._payload.ledgers = data.ledgers || []
+                  cardRef._payload.stocks = data.stocks || []
+                  cardRef._payload.parties = data.parties || []
+                  cardRef._payload._persisted = true
+                  
+                  hasData = (data.ledgers || []).length > 0 || 
+                            (data.stocks || []).length > 0 || 
+                            (data.parties || []).length > 0
+
+                  if (!hasData) {
+                    cardRef._payload._savedLimited = true
+                  }
+
+                  totalLedgers += (data.ledgers || []).length
+                  totalStocks += (data.stocks || []).length
+                  totalParties += (data.parties || []).length
+                }
+              }
+
+              // Replace skeleton with actual card
+              const newCard = makeCard(cardRef._payload, false)
+              cardRef.replaceWith(newCard)
+              
+            } catch (e) {
+              console.error('Error fetching company data:', e)
+              // Replace with basic card on error
+              const newCard = makeCard(cardRef._payload, false)
+              cardRef.replaceWith(newCard)
+            }
+          })
+
+          // Wait for all fetches to complete
+          await Promise.all(fetchPromises)
+
+          document.getElementById('totalCompaniesInGrid').textContent = companies.length
+          document.getElementById('totalCompaniesInGrid').style.color = '#000'
+          document.getElementById('totalCompaniesInGrid').style.borderRadius = '20px'
+          document.getElementById('totalCompaniesInGrid').style.padding = '0 8px'
+          // document.getElementById('totalLedgers').textContent = totalLedgers
+          // document.getElementById('totalStocks').textContent = totalStocks
+          // document.getElementById('totalParties').textContent = totalParties
+
+          attachEventHandlers()
+
+        } catch (err) {
+          console.error('Load error:', err)
+          gridEl.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:#dc2626;">Error: ${err.message}</div>`
+        }
+      }
+
+      function attachEventHandlers() {
+        const gridEl = document.getElementById('companiesGrid')
+        if (!gridEl) return
+        
+        gridEl.querySelectorAll('.view').forEach(b => {
+          b.addEventListener('click', e => {
+            const card = e.target.closest('.card')
+            const payload = card && card._payload
+            if (!payload) return
+
+            const name = payload.companyName || 'Unknown'
+            const ledgers = (payload.ledgers || []).length
+            const stocks = (payload.stocks || []).length
+            const parties = (payload.parties || []).length
+
+            const html = `
+              <h3 style="margin:0 0 16px 0; font-size:18px; font-weight:600;">${name}</h3>
+              <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;">
+                <div style="background:#dbeafe;padding:12px;border-radius:6px;text-align:center;">
+                  <div style="font-size:24px;font-weight:700;color:#2563eb;">${ledgers}</div>
+                  <div style="font-size:12px;color:#1e40af;">Ledgers</div>
+                </div>
+                <div style="background:#dcfce7;padding:12px;border-radius:6px;text-align:center;">
+                  <div style="font-size:24px;font-weight:700;color:#059669;">${stocks}</div>
+                  <div style="font-size:12px;color:#065f46;">Stocks</div>
+                </div>
+                <div style="background:#fef3c7;padding:12px;border-radius:6px;text-align:center;">
+                  <div style="font-size:24px;font-weight:700;color:#d97706;">${parties}</div>
+                  <div style="font-size:12px;color:#92400e;">Parties</div>
+                </div>
+              </div>
+            `
+            showModal(html)
+          })
+        })
+
+        gridEl.querySelectorAll('.delete-btn').forEach(b => {
+          b.addEventListener('click', e => {
+            e.stopPropagation()
+            const card = e.target.closest('.card')
+            const payload = card && card._payload
+            if (!payload) return
+            
+            const companyName = payload.companyName || 'Unknown'
+            deleteCompany(companyName)
+          })
+        })
+
+        gridEl.querySelectorAll('.sync').forEach(b => {
+          b.addEventListener('click', e => {
+            const card = e.target.closest('.card')
+            if (!card) return
+            const payload = card._payload || {}
+            const requestedName = payload.companyName || 'this company'
+
+            showModal(`
+              <h3 style="margin:0 0 12px 0; font-size:18px; font-weight:600;">Sync "${requestedName}"</h3>
+              <div style="font-size:14px;color:#666;margin-bottom:12px;">To fetch full data from Tally, open the company in Tally Prime and then confirm. If you want to save provided details without fetching Tally data, choose "Save Details".</div>
+              <div style="display:flex;gap:8px;justify-content:flex-end;">
+                <button id="cancelSyncBtn" class="px-3 py-1 rounded" style="background:#e5e7eb; border:none; cursor:pointer;">Cancel</button>
+                <button id="confirmSyncBtn" class="px-3 py-1 rounded" style="background:#059669;color:white; border:none; cursor:pointer;">Confirm & Fetch</button>
+              </div>
+            `)
+
+            setTimeout(() => {
+              const cancel = document.getElementById('cancelSyncBtn')
+              const saveOnly = document.getElementById('saveOnlyBtn')
+              const confirm = document.getElementById('confirmSyncBtn')
+              if (cancel) cancel.addEventListener('click', closeModal)
+              if (saveOnly) saveOnly.addEventListener('click', async () => {
+                closeModal(); await syncCompany(requestedName, payload, true)
+              })
+              if (confirm) confirm.addEventListener('click', async () => {
+                closeModal(); await syncCompany(requestedName, payload, false)
+              })
+            }, 50)
+          })
+        })
+
+        gridEl.querySelectorAll('.fetch-data').forEach(b => {
+          b.addEventListener('click', e => {
+            const card = e.target.closest('.card')
+            if (!card) return
+            const payload = card._payload || {}
+            const companyName = payload.companyName || 'this company'
+
+            showModal(`
+              <h3 style="margin:0 0 12px 0; font-size:18px; font-weight:600;">Fetch Data for "${companyName}"</h3>
+              <div style="font-size:14px;color:#666;margin-bottom:12px;">Open the company in Tally Prime, then click <strong>Fetch Now</strong> to attempt fetching ledgers/stocks/parties from Tally.</div>
+              <div style="display:flex;gap:8px;justify-content:flex-end;">
+                <button id="cancelFetchBtn" class="px-3 py-1 rounded" style="background:#e5e7eb; border:none; cursor:pointer;">Cancel</button>
+                <button id="doFetchBtn" class="px-3 py-1 rounded" style="background:#059669;color:white; border:none; cursor:pointer;">Fetch Now</button>
+              </div>
+            `)
+
+            setTimeout(() => {
+              const cancel = document.getElementById('cancelFetchBtn')
+              const doFetch = document.getElementById('doFetchBtn')
+              if (cancel) cancel.addEventListener('click', closeModal)
+              if (doFetch) doFetch.addEventListener('click', async () => {
+                closeModal()
+                await syncCompany(companyName, payload, false)
+              })
+            }, 50)
+          })
+        })
+      }
+
+      async function syncCompany(companyName, companyDetails = null, force = false) {
+        showModal('<div style="padding:40px;text-align:center;"><div style="font-size:32px;margin-bottom:16px;">⏳</div><div>Syncing company data from Tally...</div></div>')
+        try {
+            const url = `http://localhost:3000/api/sync-tally/${encodeURIComponent(companyName)}${force ? '?force=true' : ''}`
+            const res = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ companyDetails: companyDetails || {} })
+            })
+
+            const rawText = await res.text().catch(() => '')
+            let json = {}
+            try { json = rawText ? JSON.parse(rawText) : {} } catch (e) { json = { error: rawText || e.message } }
+
+            if (res.status === 409) {
+            closeModal()
+            showModal(`
+              <h3 style="margin:0 0 12px 0; font-size:18px; color:#f59e0b; font-weight:600;">⚠️ Active Company Mismatch</h3>
+              <div style="padding:14px; background:#fff7ed; border-left:4px solid #f59e0b; border-radius:6px; margin-bottom:12px;">Requested: <strong>${companyName}</strong><br/>Active in Tally: <strong>${json.activeCompany || 'Unknown'}</strong></div>
+              <div style="display:flex;gap:8px;justify-content:flex-end;">
+                <button onclick="closeModal(); loadCompanies();" class="px-3 py-1 rounded" style="background:#e5e7eb; border:none; cursor:pointer;">Open & Refresh</button>
+                <button id="forceConfirmBtn" class="px-3 py-1 rounded" style="background:#059669;color:white; border:none; cursor:pointer;">Force Save Anyway</button>
+              </div>
+            `)
+
+            setTimeout(() => {
+              const fb = document.getElementById('forceConfirmBtn')
+              if (fb) fb.addEventListener('click', async () => {
+                closeModal()
+                await syncCompany(companyName, companyDetails, true)
+              })
+            }, 50)
+            return
+          }
+
+          if (!res.ok) {
+            showModal(`
+              <h3 style="margin:0 0 12px 0; font-size:18px; color:#dc2626; font-weight:600;">❌ Sync Failed</h3>
+              <div style="padding:14px; background:#fee2e2; border-left:4px solid #dc2626; border-radius:6px; margin-bottom:16px;">
+                <div style="font-size:14px;">${json.error || 'Unknown error'}</div>
+              </div>
+            `)
+            return
+          }
+
+          const d = json.data || {}
+          const savedLimited = json.savedLimited || false
+
+          if (savedLimited) {
+            showModal(`<h3 style="color:#059669;">✅ Saved (Limited)</h3><div>${companyName} details were saved without ledgers/stocks/parties.</div>`)
+          } else {
+            showModal(`
+              <h3 style="margin:0 0 12px 0; font-size:18px; color:#059669; font-weight:600;">✅ Sync Complete!</h3>
+              <div style="font-size:15px;margin:12px 0;font-weight:600;">${json.data?.companyName || companyName}</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0;">
+                <div style="background:#dbeafe;padding:12px;border-radius:6px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#2563eb;">${json.data?.ledgers?.length||0}</div><div style="font-size:12px;color:#1e40af;">Ledgers</div></div>
+                <div style="background:#dcfce7;padding:12px;border-radius:6px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#059669;">${json.data?.stocks?.length||0}</div><div style="font-size:12px;color:#065f46;">Stocks</div></div>
+                <div style="background:#fef3c7;padding:12px;border-radius:6px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#d97706;">${json.data?.parties?.length||0}</div><div style="font-size:12px;color:#92400e;">Parties</div></div>
+              </div>
+            `)
+          }
+
+          showNotification('✅ Company synced successfully!', 'success')
+          setTimeout(() => {
+            closeModal()
+            loadCompanies()
+          }, 1500)
+
+        } catch (err) {
+          console.error('Sync error:', err)
+          showModal(`<h3 style="margin:0 0 12px 0; font-size:18px; color:#dc2626; font-weight:600;">❌ Sync Error</h3><div style="padding:14px; background:#fee2e2; border-radius:6px;"><div style="font-size:14px;">Failed to sync company: ${err.message}</div></div>`)
+        } 
+      }
+
+      loadCompanies()
+      ;(async function loadTotalCompaniesFromDB(){
+        try {
+          const el = document.getElementById('totalCompanies')
+          if(!el) return
+          const res = await fetch('http://localhost:3000/api/company-names')
+          if(!res.ok) return
+          const json = await res.json()
+          const list = (json && json.success && Array.isArray(json.data)) ? json.data : []
+          el.textContent = list.length
+        } catch(e) { /* noop */ }
+      })()
+      ;(function initSplash(){
+        const splash = document.createElement('div')
+        splash.id = 'appSplash'
+        splash.className = 'app-splash'
+        splash.innerHTML = '<div class="splash-content"><img src="./public/co_logo.png" class="splash-logo" alt="Logo"/><div class="splash-name">COCHIN TRADERS</div><div id="splashStatus" style="color:#e5e7eb;font-size:13px;max-width:420px;text-align:center"></div></div>'
+        document.body.appendChild(splash)
+
+        // Ensure splash is visible for at least 2 seconds
+        const minDisplayMs = 2000
+        window.__splashMinEnd = Date.now() + minDisplayMs
+
+        // Helper to hide/remove the splash respecting minimum display duration
+        window.hideAppSplash = function(){
+          try{
+            const el = document.getElementById('appSplash')
+            if(!el) return
+            const wait = Math.max(0, window.__splashMinEnd - Date.now())
+            if(wait <= 0){
+              el.classList.add('hide')
+              setTimeout(()=>{ const e = document.getElementById('appSplash'); if(e) e.remove() }, 350)
+            } else {
+              setTimeout(()=>{
+                const e = document.getElementById('appSplash')
+                if(e){ e.classList.add('hide'); setTimeout(()=> e.remove(), 350) }
+              }, wait)
+            }
+          }catch(_){ }
+        }
+
+        const target = document.getElementById('companiesGrid')
+        if(!target) return
+        const observer = new MutationObserver(()=>{
+          const cards = target.querySelectorAll('.card')
+          const skeletons = target.querySelectorAll('.skeleton-section')
+          const totalsSet = !!document.getElementById('totalCompaniesInGrid')?.textContent
+          if((cards.length>0 && skeletons.length===0) || totalsSet){
+            window.hideAppSplash()
+            ;(function removeCountSkeleton(){
+              ['totalCompanies','totalLedgers','totalStocks','totalParties'].forEach(id=>{
+                const el = document.getElementById(id)
+                if(!el) return
+                el.style.visibility = ''
+                const prev = el.previousElementSibling
+                if(prev && prev.classList.contains('count-skeleton')) prev.remove()
+              })
+            })()
+            observer.disconnect()
+          }
+        })
+        observer.observe(target, { childList:true, subtree:true })
+      })();
+
+      (async function checkTallyODBC(){
+        try{
+          const res = await fetch('http://localhost:3000/api/tally-odbc-check')
+          const json = await res.json().catch(()=>({}))
+          const nav = document.getElementById('activeCompanyName')
+          if(json && json.connected){
+            if(nav){ nav.style.display=''; nav.textContent = 'Tally @ PORT:' + (json.port || '9000') }
+            if(window && typeof window.hideAppSplash === 'function') window.hideAppSplash()
+          }else{
+            if(nav){ nav.style.display='none' }
+            const m = document.getElementById('splashStatus')
+            if(m){ m.textContent = 'Unable to connect to Tally ODBC. Open Tally Prime and enable ODBC (default port 9000), then keep a company selected.' }
+          }
+        }catch(e){
+          const nav = document.getElementById('activeCompanyName')
+          if(nav) nav.style.display='none'
+          const m = document.getElementById('splashStatus')
+          if(m){ m.textContent = 'Tally ODBC not reachable. Open Tally Prime and ensure ODBC is enabled.' }
+        }
+      })()
+
+      ;(function initKpiSkeleton(){
+        ['totalCompanies','totalLedgers','totalStocks','totalParties'].forEach(id=>{
+          const el = document.getElementById(id)
+          if(!el) return
+          const sk = document.createElement('div')
+          sk.className = 'count-skeleton skeleton-shimmer'
+          el.style.visibility = 'hidden'
+          el.parentNode && el.parentNode.insertBefore(sk, el)
+          const obs = new MutationObserver(()=>{
+            const txt = (el.textContent||'').trim()
+            if(txt !== '' && txt !== '0'){
+              el.style.visibility = ''
+              const prev = el.previousElementSibling
+              if(prev && prev.classList.contains('count-skeleton')) prev.remove()
+              obs.disconnect()
+            }
+          })
+          obs.observe(el, { characterData:true, childList:true, subtree:true })
+        })
+      })()
+
+      function clearKpiSkeletons(){
+        ['totalCompanies','totalLedgers','totalStocks','totalParties'].forEach(id=>{
+          const el = document.getElementById(id)
+          if(!el) return
+          el.style.visibility = ''
+          const prev = el.previousElementSibling
+          if(prev && prev.classList.contains('count-skeleton')) prev.remove()
+        })
+      };
+      (async function loadAggregatedStatsFromDB(){
+        try{
+          const res = await fetch('http://localhost:3000/api/stats')
+          if(!res.ok) return
+          const json = await res.json()
+          const d = json && json.data ? json.data : {}
+          const set = (id, val)=>{ const el = document.getElementById(id); if(el) el.textContent = String(val ?? 0) }
+          set('totalLedgers', d.totalLedgers)
+          set('totalStocks', d.totalStocks)
+          set('totalParties', d.totalParties)
+          if(typeof d.totalCompanies === 'number') set('totalCompanies', d.totalCompanies)
+          clearKpiSkeletons()
+        }catch(e){ /* ignore */ }
+      })();
+      (function enhanceErrorMessages(){
+        const gridEl = document.getElementById('companiesGrid')
+        if(!gridEl) return
+        const normalize = (s)=> (s||'').toLowerCase()
+        const obs = new MutationObserver(()=>{
+          const txt = (gridEl.textContent||'').trim()
+          if(txt.startsWith('Error:')){
+            let raw = txt.replace(/^Error:\s*/, '')
+            let obj = null
+            try{ obj = JSON.parse(raw) }catch(_){ obj = { error: raw } }
+            const e = normalize(obj && obj.error)
+            let title = 'Error'
+            let message = 'An unexpected error occurred.'
+            let hint = ''
+            if(e.includes('connecting to the database')){
+              title = 'Tally Not Open'
+              message = 'Unable to connect to Tally ODBC. Open Tally Prime and enable ODBC.'
+              hint = 'Ensure ODBC port matches server configuration (default 9000).'
+            }else if(e.includes('executing the sql statement')){
+              title = 'No Active Company'
+              message = 'No company is loaded or accessible in Tally.'
+              hint = 'Open a company in Tally and keep it selected in Gateway.'
+            }
+            gridEl.innerHTML = '<div class="error-box"><div class="title">'+title+'</div><div class="text">'+message+'</div><div class="muted">'+hint+'</div></div>'
+          }
+        })
+        obs.observe(gridEl, { childList:true, subtree:true, characterData:true })
+      })()
+
+      ;(function attachRefreshCounts(){
+        function setKpiSkeleton(){
+          ['totalCompanies','totalLedgers','totalStocks','totalParties'].forEach(id=>{
+            const el = document.getElementById(id)
+            if(!el) return
+            const sk = document.createElement('div');
+            sk.className = 'count-skeleton skeleton-shimmer'
+            el.style.visibility = 'hidden'
+            el.parentNode && el.parentNode.insertBefore(sk, el)
+          })
+        }
+
+        async function fetchDbCounts(){
+          try{
+            const res = await fetch('http://localhost:3000/api/stats')
+            if(res.ok){
+              const json = await res.json()
+              const d = json && json.data ? json.data : {}
+              const set = (id, val)=>{ const el = document.getElementById(id); if(el) el.textContent = String(val ?? 0) }
+              set('totalLedgers', d.totalLedgers)
+              set('totalStocks', d.totalStocks)
+              set('totalParties', d.totalParties)
+              if(typeof d.totalCompanies === 'number') set('totalCompanies', d.totalCompanies)
+            }
+          }catch(e){}
+          try{
+            const res2 = await fetch('http://localhost:3000/api/company-names')
+            if(res2.ok){
+              const j2 = await res2.json()
+              const list = (j2 && j2.success && Array.isArray(j2.data)) ? j2.data : []
+              const el = document.getElementById('totalCompanies')
+              if(el) el.textContent = list.length
+            }
+          }catch(e){}
+          clearKpiSkeletons()
+        }
+
+        const refreshBtn = document.querySelector('button[onclick="loadCompanies()"]')
+        if(refreshBtn){
+          refreshBtn.addEventListener('click', ()=> { startRefreshAnimation(); setKpiSkeleton(); fetchDbCounts() })
+        }
+      })()
+
+    </script>
+  </body>
+</html>
