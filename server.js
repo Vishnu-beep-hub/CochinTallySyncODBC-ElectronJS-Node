@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require("fs");
+const ngrok = require("ngrok");
 try {
   require("dotenv").config();
 } catch (e) {}
@@ -269,7 +270,7 @@ async function getCompanyLedgers(connection, companyName) {
         $Phone as Phone,
         $MailingName as MailingName
       FROM LEDGER
-      ORDER BY $ClosingBalance DESC
+      ORDER BY $ClosingBalance ASC
     `;
     const results = await connection.query(query);
     return results.map((ledger) => ({ ...ledger, CompanyName: companyName }));
@@ -294,7 +295,7 @@ async function getCompanyStocks(connection, companyName) {
         $OpeningValue as OpeningValue,
         $BaseUnits as Unit
       FROM STOCKITEM
-      ORDER BY $ClosingValue DESC
+      ORDER BY $ClosingValue ASC
     `;
     const results = await connection.query(query);
     return results.map((stock) => ({ ...stock, CompanyName: companyName }));
@@ -321,7 +322,7 @@ async function getCompanyParties(connection, companyName) {
         $MailingName as MailingName
       FROM LEDGER
       WHERE $_PrimaryGroup IN ('Sundry Debtors', 'Sundry Creditors')
-      ORDER BY $_PrimaryGroup, $ClosingBalance DESC
+      ORDER BY $_PrimaryGroup, $ClosingBalance ASC
     `;
     const results = await connection.query(query);
     return results.map((party) => ({ ...party, CompanyName: companyName }));
@@ -1777,12 +1778,37 @@ app.post("/api/orders/:companyName/:shopName", async (req, res) => {
           { $inc: { "batches.$.quantity": -orderedBatch.orderedQty } },
         );
       }
+      const totalOrderedForItem = orderedBatches.reduce(
+        (sum, b) => sum + b.orderedQty,
+        0,
+      );
+      await batchesCol.updateOne(
+        { companyName, stockItem },
+        {
+          $inc: { totalQuantity: -totalOrderedForItem },
+          $set: { updatedAt: new Date() },
+        },
+      );
+      const _updatedDoc = await batchesCol.findOne(
+        { companyName, stockItem },
+        { projection: { totalQuantity: 1, batches: 1, updatedAt: 1 } },
+      );
+      const _batchCount = (_updatedDoc?.batches || []).length;
+      const _totalQty = _updatedDoc?.totalQuantity || 0;
+      const _updatedAt = _updatedDoc?.updatedAt;
 
       processedItems.push({
         stockItem,
         orderedBatches,
         totalPieces: orderedBatches.reduce((sum, b) => sum + b.orderedQty, 0),
       });
+      if (processedItems.length > 0) {
+        processedItems[processedItems.length - 1].totals = {
+          totalQuantity: _totalQty,
+          batchCount: _batchCount,
+          updatedAt: _updatedAt,
+        };
+      }
     }
 
     // Calculate total pieces
@@ -1894,6 +1920,7 @@ app.post("/api/orders/:companyName/:shopName", async (req, res) => {
       success: true,
       message: `Order placed and stock batches updated successfully for ${shopName}`,
       companyName,
+      items: processedItems,
     });
   } catch (err) {
     console.error("/api/orders error:", err.message);
@@ -1901,9 +1928,288 @@ app.post("/api/orders/:companyName/:shopName", async (req, res) => {
   }
 });
 
+app.post("/api/punch-in", async (req, res) => {
+  try {
+    const {
+      employeeName,
+      employeePhone,
+      companyName,
+      shopName,
+      amount,
+      location,
+      time,
+      date,
+    } = req.body;
+
+    // Validation
+    if (!employeeName) {
+      return res.status(400).json({
+        success: false,
+        error: "Employee name is required",
+      });
+    }
+    if (!employeePhone) {
+      return res.status(400).json({
+        success: false,
+        error: "Employee phone is required",
+      });
+    }
+    if (!companyName) {
+      return res.status(400).json({
+        success: false,
+        error: "Company name is required",
+      });
+    }
+    if (!shopName) {
+      return res.status(400).json({
+        success: false,
+        error: "Shop name is required",
+      });
+    }
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Valid amount is required",
+      });
+    }
+    if (!location) {
+      return res.status(400).json({
+        success: false,
+        error: "Location is required",
+      });
+    }
+    if (!time) {
+      return res.status(400).json({
+        success: false,
+        error: "Time is required",
+      });
+    }
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        error: "Date is required",
+      });
+    }
+
+    // Log the punch in data
+    console.log("📍 New Punch In:", {
+      employeeName,
+      shopName,
+      amount,
+      location,
+      time,
+      date,
+    });
+
+    // Prepare email content
+    const emailSubject = `Punch In - ${employeeName} - ${shopName} - ${date}`;
+
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            background-color: #780206;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+          }
+          .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            background-color: white;
+          }
+          th {
+            background-color: #780206;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+          }
+          td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+          }
+          tr:last-child td {
+            border-bottom: none;
+          }
+          .label {
+            font-weight: bold;
+            color: #555;
+            width: 40%;
+          }
+          .value {
+            color: #333;
+          }
+          .amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: #780206;
+          }
+          .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 style="margin: 0;">New Punch In Record</h1>
+          <p style="margin: 5px 0 0 0;">Cochin Traders</p>
+        </div>
+        <div class="content">
+          <table>
+            <tr>
+              <td class="label">Employee Name:</td>
+              <td class="value">${employeeName}</td>
+            </tr>
+            <tr>
+              <td class="label">Phone Number:</td>
+              <td class="value">${employeePhone}</td>
+            </tr>
+            <tr>
+              <td class="label">Company Name:</td>
+              <td class="value">${companyName}</td>
+            </tr>
+            <tr>
+              <td class="label">Shop Name:</td>
+              <td class="value">${shopName}</td>
+            </tr>
+            <tr>
+              <td class="label">Amount:</td>
+              <td class="value amount">₹${Number(amount).toLocaleString("en-IN")}</td>
+            </tr>
+            <tr>
+              <td class="label">Location:</td>
+              <td class="value">${location}</td>
+            </tr>
+            <tr>
+              <td class="label">Date:</td>
+              <td class="value">${date}</td>
+            </tr>
+            <tr>
+              <td class="label">Time:</td>
+              <td class="value">${time}</td>
+            </tr>
+          </table>
+          <div class="footer">
+            <p>This is an automated email from Cochin Traders Punch In System</p>
+            <p>Sent on ${new Date().toLocaleString("en-IN", {
+              timeZone: "Asia/Kolkata",
+              dateStyle: "full",
+              timeStyle: "long",
+            })}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const emailText = `
+      New Punch In Record - Cochin Traders
+
+      Employee Name: ${employeeName}
+      Phone Number: ${employeePhone}
+      Company Name: ${companyName}
+      Shop Name: ${shopName}
+      Amount: ₹${Number(amount).toLocaleString("en-IN")}
+      Location: ${location}
+      Date: ${date}
+      Time: ${time}
+
+      ---
+      This is an automated email from Cochin Traders Punch In System
+    `;
+
+    // Send email
+    const transporter = getMailTransporter();
+    if (!transporter) {
+      console.error("❌ Mail transporter not configured");
+      return res.status(500).json({
+        success: false,
+        error: "Email service not configured on server",
+      });
+    }
+
+    const mailOptions = {
+      from: `"${MAIL_FROM_NAME}" <${MAIL_FROM_EMAIL}>`,
+      to: `"${MAIL_TO_NAME}" <${MAIL_TO_EMAIL}>`,
+      subject: emailSubject,
+      html: emailHtml,
+      text: emailText,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    console.log(`✓ Punch in email sent successfully to ${MAIL_TO_EMAIL}`);
+    console.log(`  Employee: ${employeeName}`);
+    console.log(`  Shop: ${shopName}`);
+    console.log(`  Amount: ₹${amount}`);
+
+    res.json({
+      success: true,
+      message: "Punch in recorded and email sent successfully",
+      data: {
+        employeeName,
+        shopName,
+        amount,
+        location,
+        date,
+        time,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Punch in error:", error);
+
+    if (error.code === "EAUTH") {
+      return res.status(500).json({
+        success: false,
+        error: "Email authentication failed. Please check server credentials.",
+      });
+    }
+
+    if (error.code === "ECONNECTION") {
+      return res.status(500).json({
+        success: false,
+        error: "Failed to connect to email server. Please try again.",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to process punch in. Please try again.",
+    });
+  }
+});
+
 // Start server
 if (require.main === module) {
   app.listen(PORT, async () => {
+    const url = await ngrok.connect({
+      addr: PORT,
+      authtoken: "38T66CgRk6SmtByFCAC6eM4vj4W_6fMZCqqvfG4AYjaZwKhtt",
+    })
+    console.log(`Public URL: ${url}`)
     console.log("\n" + "=".repeat(70));
     console.log("🚀 TALLY CONNECT API SERVER");
     console.log("=".repeat(70));

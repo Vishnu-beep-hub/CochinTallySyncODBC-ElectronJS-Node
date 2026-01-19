@@ -726,9 +726,8 @@
           const m = document.getElementById('splashStatus')
           if(m){ m.textContent = 'Tally ODBC not reachable. Open Tally Prime and ensure ODBC is enabled.' }
         }
-      })()
-
-      ;(function initKpiSkeleton(){
+      })();
+      (function initKpiSkeleton(){
         ['totalCompanies','totalLedgers','totalStocks','totalParties'].forEach(id=>{
           const el = document.getElementById(id)
           if(!el) return
