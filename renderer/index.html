@@ -322,7 +322,10 @@
               
               try {
                 const res = await fetch(`http://localhost:3000/api/company/${encodeURIComponent(companyName)}`, {
-                  method: 'DELETE'
+                  method: 'DELETE',
+                  headers: {
+                    "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+                  }
                 })
                 
                 const json = await res.json()
@@ -367,7 +370,11 @@
         if (!gridEl) return console.error('companiesGrid element not found')
 
         try {
-          const res = await fetch('http://localhost:3000/api/tally-companies')
+          const res = await fetch('http://localhost:3000/api/tally-companies', {
+            headers: {
+              "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+            }
+          })
           if (!res.ok) throw new Error(await res.text())
           const json = await res.json()
           const companies = json.data || []
@@ -404,7 +411,11 @@
             if (!cardRef) return
 
             try {
-              const r = await fetch(`http://localhost:3000/api/company/${encodeURIComponent(name)}`)
+              const r = await fetch(`http://localhost:3000/api/company/${encodeURIComponent(name)}`, {
+                headers: {
+                  "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+                }
+              })
               
               let hasData = false
               if (r.ok) {
@@ -574,6 +585,9 @@
         try {
             const url = `http://localhost:3000/api/sync-tally/${encodeURIComponent(companyName)}${force ? '?force=true' : ''}`
             const res = await fetch(url, {
+              headers: {
+                "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+              },
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ companyDetails: companyDetails || {} })
@@ -648,7 +662,12 @@
         try {
           const el = document.getElementById('totalCompanies')
           if(!el) return
-          const res = await fetch('http://localhost:3000/api/company-names')
+          const res = await fetch('http://localhost:3000/api/company-names', {
+            headers: {
+              "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+            }
+          })
+
           if(!res.ok) return
           const json = await res.json()
           const list = (json && json.success && Array.isArray(json.data)) ? json.data : []
@@ -709,7 +728,11 @@
 
       (async function checkTallyODBC(){
         try{
-          const res = await fetch('http://localhost:3000/api/tally-odbc-check')
+          const res = await fetch('http://localhost:3000/api/tally-odbc-check', {
+            headers: {
+              "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+            }
+          })
           const json = await res.json().catch(()=>({}))
           const nav = document.getElementById('activeCompanyName')
           if(json && json.connected){
@@ -759,7 +782,11 @@
       };
       (async function loadAggregatedStatsFromDB(){
         try{
-          const res = await fetch('http://localhost:3000/api/stats')
+          const res = await fetch('http://localhost:3000/api/stats', {
+            headers: {
+              "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+            }
+          })
           if(!res.ok) return
           const json = await res.json()
           const d = json && json.data ? json.data : {}
@@ -814,7 +841,11 @@
 
         async function fetchDbCounts(){
           try{
-            const res = await fetch('http://localhost:3000/api/stats')
+            const res = await fetch('http://localhost:3000/api/stats', {
+              headers: {
+                "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+              }
+            })
             if(res.ok){
               const json = await res.json()
               const d = json && json.data ? json.data : {}
@@ -826,7 +857,11 @@
             }
           }catch(e){}
           try{
-            const res2 = await fetch('http://localhost:3000/api/company-names')
+            const res2 = await fetch('http://localhost:3000/api/company-names', {
+              headers: {
+                "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+              }
+            })
             if(res2.ok){
               const j2 = await res2.json()
               const list = (j2 && j2.success && Array.isArray(j2.data)) ? j2.data : []

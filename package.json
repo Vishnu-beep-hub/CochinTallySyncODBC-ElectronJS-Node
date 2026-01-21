@@ -9,6 +9,9 @@
     "directories": {
       "buildResources": "build"
     },
+    "asarUnpack": [
+      "node_modules/ngrok/bin/**"
+    ],
     "mac": {
       "category": "public.app-category.productivity"
     },
@@ -64,6 +67,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
+    "get-port": "^7.1.0",
     "mongodb": "^7.0.0",
     "ngrok": "^5.0.0-beta.2",
     "nodemailer": "^6.9.3",

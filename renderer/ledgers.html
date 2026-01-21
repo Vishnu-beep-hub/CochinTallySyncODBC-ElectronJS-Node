@@ -133,7 +133,11 @@
             try{ localStorage.removeItem('companiesList') }catch(e){}
 
             try{
-              const res = await fetch('http://localhost:3000/api/company-names')
+              const res = await fetch('http://localhost:3000/api/company-names', {
+                headers: {
+                  "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+                }
+              })
               if (!res.ok) throw new Error('Failed to fetch company names')
               const json = await res.json()
               const list = (json && json.success && Array.isArray(json.data)) ? json.data.map(r=>({ companyName: r.companyName || '', lastSyncedAt: r.lastSyncedAt || null })) : []
@@ -436,7 +440,11 @@
           </div>
         `
         try{
-          const res = await fetch('http://localhost:3000/api/ledgers/' + encodeURIComponent(name))
+          const res = await fetch('http://localhost:3000/api/ledgers/' + encodeURIComponent(name), {
+            headers: {
+              "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
+            }
+          })
           const json = await res.json()
           const ledgers = json.data || json
           renderLedgers(ledgers)
