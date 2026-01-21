@@ -126,7 +126,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://reparative-fluxionary-lynwood.ngrok-free.dev",
+      // "https://reparative-fluxionary-lynwood.ngrok-free.dev",
+      "https://cochintraderstirur.loca.lt",
+      "https://cochintraderstirur123.loca.lt",
     ],
   }),
 );
@@ -2212,17 +2214,10 @@ app.post("/api/punch-in", async (req, res) => {
 
 // Start server
 app.listen(PORT, async () => {
-  try {
-    const ngrokPath = path.join(process.resourcesPath, "bin", "ngrok.exe");
-    const url = await ngrok.connect({
-      addr: PORT,
-      authtoken: "38T66CgRk6SmtByFCAC6eM4vj4W_6fMZCqqvfG4AYjaZwKhtt",
-      binPath: ngrokPath,
-    });
-    console.log(`Public URL: ${url}`);
-  } catch (err) {
-    console.error("Error starting ngrok:", err);
-  }
+  console.clear();
+  console.log("\n" + "=".repeat(70));
+  console.log("🔷 TALLY CONNECT API SERVER STARTING... on odbc 9000 port");
+  console.log("Node is running in Port:", PORT);
   console.log("\n" + "=".repeat(70));
   console.log("🚀 TALLY CONNECT API SERVER");
   console.log("=".repeat(70));
