@@ -1,3 +1,4 @@
+// main.js
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 
@@ -16,72 +17,88 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join("renderer", "index.html"));
+  // Load your frontend (renderer process)
+  mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
+
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
 }
 
-app.whenReady().then(() => {
-  try {
-    app.setAppUserModelId("com.tallyconnect");
-  } catch (e) {}
-  createWindow();
-
-  // Start backend Express server automatically when app starts
+function startBackend() {
   try {
     const server = require("./server");
     const PORT = process.env.PORT || 9049;
 
-    // If server exposes start(), use it (old behavior)
+    // Case 1: server exposes start()
     if (server && typeof server.start === "function") {
       server
         .start()
         .then((inst) => {
           backendInstance = inst;
-          console.log("Backend started from main process via start()");
+          console.log("Backend started via start()");
         })
         .catch((err) =>
           console.error("Backend failed to start via start()", err),
         );
 
-      // If server exports an Express `app`, listen on it
+      // Case 2: server exports an Express app
     } else if (
       server &&
       server.app &&
       typeof server.app.listen === "function"
     ) {
       const httpServer = server.app.listen(PORT, () => {
-        console.log(`Backend Express app started on http://localhost:${PORT}`);
+        console.log(`Backend Express app running at http://localhost:${PORT}`);
       });
-      backendInstance = { stop: () => new Promise((r) => httpServer.close(r)) };
+      backendInstance = {
+        stop: () => new Promise((resolve) => httpServer.close(resolve)),
+      };
 
-      // If server itself is an Express app
+      // Case 3: server itself is an HTTP server
     } else if (server && typeof server.listen === "function") {
       const httpServer = server.listen(PORT, () => {
-        console.log(`Backend started on http://localhost:${PORT}`);
+        console.log(`Backend started at http://localhost:${PORT}`);
       });
-      backendInstance = { stop: () => new Promise((r) => httpServer.close(r)) };
+      backendInstance = {
+        stop: () => new Promise((resolve) => httpServer.close(resolve)),
+      };
     } else {
       console.warn(
-        "Server module does not expose a start() or app.listen(); backend not started",
+        "Server module does not expose start() or app.listen(); backend not started",
       );
     }
   } catch (err) {
     console.error("Failed to require server module:", err);
   }
+}
 
-  app.on("activate", function () {
+// Electron lifecycle
+app.whenReady().then(() => {
+  try {
+    app.setAppUserModelId("com.tallyconnect");
+  } catch (e) {
+    console.warn("AppUserModelId not set:", e);
+  }
+
+  createWindow();
+  startBackend();
+
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-app.on("window-all-closed", function () {
+app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
-    // stop backend when app quits
-    if (backendInstance && backendInstance.stop) backendInstance.stop();
+    if (backendInstance && backendInstance.stop) {
+      backendInstance.stop().then(() => console.log("Backend stopped"));
+    }
     app.quit();
   }
 });
 
-// IPC handlers (optional controls from renderer)
+// IPC handlers for renderer → backend control
 ipcMain.handle("backend:getUrl", async () => {
   return { url: "http://localhost:9049" };
 });

@@ -121,7 +121,7 @@
       async function load(){
         grid.innerHTML = '<div class="p-4 text-sm text-gray-500">Loading companies...</div>'
         try{
-          const res = await fetch('http://localhost:9049/api/companies-data')
+          const res = await fetch('http://www.cochintraderstirur.linkpc.net/api/companies-data')
           if(!res.ok) throw new Error(await res.text())
           const json = await res.json()
           const data = json.data || []

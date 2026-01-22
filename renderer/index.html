@@ -321,7 +321,7 @@
               showModal('<div style="padding:40px;text-align:center;"><div style="font-size:32px;margin-bottom:16px;">⏳</div><div>Deleting company data...</div></div>')
               
               try {
-                const res = await fetch(`http://localhost:3000/api/company/${encodeURIComponent(companyName)}`, {
+                const res = await fetch(`http://www.cochintraderstirur.linkpc.net/api/company/${encodeURIComponent(companyName)}`, {
                   method: 'DELETE',
                   headers: {
                     "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
@@ -370,7 +370,7 @@
         if (!gridEl) return console.error('companiesGrid element not found')
 
         try {
-          const res = await fetch('http://localhost:3000/api/tally-companies', {
+          const res = await fetch('http://www.cochintraderstirur.linkpc.net/api/api/tally-companies', {
             headers: {
               "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
             }
@@ -411,7 +411,7 @@
             if (!cardRef) return
 
             try {
-              const r = await fetch(`http://localhost:3000/api/company/${encodeURIComponent(name)}`, {
+              const r = await fetch(`http://www.cochintraderstirur.linkpc.net/api/company/${encodeURIComponent(name)}`, {
                 headers: {
                   "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
                 }
@@ -583,7 +583,7 @@
       async function syncCompany(companyName, companyDetails = null, force = false) {
         showModal('<div style="padding:40px;text-align:center;"><div style="font-size:32px;margin-bottom:16px;">⏳</div><div>Syncing company data from Tally...</div></div>')
         try {
-            const url = `http://localhost:3000/api/sync-tally/${encodeURIComponent(companyName)}${force ? '?force=true' : ''}`
+            const url = `http://www.cochintraderstirur.linkpc.net/api/sync-tally/${encodeURIComponent(companyName)}${force ? '?force=true' : ''}`
             const res = await fetch(url, {
               headers: {
                 "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
@@ -662,7 +662,7 @@
         try {
           const el = document.getElementById('totalCompanies')
           if(!el) return
-          const res = await fetch('http://localhost:3000/api/company-names', {
+          const res = await fetch('http://www.cochintraderstirur.linkpc.net/api/company-names', {
             headers: {
               "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
             }
@@ -728,7 +728,7 @@
 
       (async function checkTallyODBC(){
         try{
-          const res = await fetch('http://localhost:3000/api/tally-odbc-check', {
+          const res = await fetch('http://www.cochintraderstirur.linkpc.net/api/tally-odbc-check', {
             headers: {
               "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
             }
@@ -782,7 +782,7 @@
       };
       (async function loadAggregatedStatsFromDB(){
         try{
-          const res = await fetch('http://localhost:3000/api/stats', {
+          const res = await fetch('http://www.cochintraderstirur.linkpc.net/api/stats', {
             headers: {
               "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
             }
@@ -841,7 +841,7 @@
 
         async function fetchDbCounts(){
           try{
-            const res = await fetch('http://localhost:3000/api/stats', {
+            const res = await fetch('http://www.cochintraderstirur.linkpc.net/api/stats', {
               headers: {
                 "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
               }
@@ -857,7 +857,7 @@
             }
           }catch(e){}
           try{
-            const res2 = await fetch('http://localhost:3000/api/company-names', {
+            const res2 = await fetch('http://www.cochintraderstirur.linkpc.net/api/company-names', {
               headers: {
                 "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
               }

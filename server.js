@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
-const ngrok = require("ngrok");
+const http = require("http");
+// const ngrok = require("ngrok");
 const ngrokPath = path.join(process.resourcesPath, "bin", "ngrok.exe");
 try {
   require("dotenv").config();
@@ -23,6 +24,12 @@ const cors = require("cors");
 const odbc = require("odbc");
 const nodemailer = require("nodemailer");
 const { MongoClient } = require("mongodb");
+
+// Encrypt certs
+// const sslOptions = {
+//   key: fs.readFileSync("C:/ProgramData/win-acme/.../privkey.pem"),
+//   cert: fs.readFileSync("C:/ProgramData/win-acme/.../fullchain.pem"),
+// };
 
 // Environment variables
 const PORT = process.env.PORT || 3000;
@@ -125,10 +132,9 @@ app.use((req, res, next) => {
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
-      // "https://reparative-fluxionary-lynwood.ngrok-free.dev",
-      "https://cochintraderstirur.loca.lt",
-      "https://cochintraderstirur123.loca.lt",
+      "https://api.cochintraderstirur.linkpc.net",
+      "https://tally.cochintraderstirur.linkpc.net",
+      "https://cochintraderstirur.linkpc.net",
     ],
   }),
 );
@@ -348,6 +354,10 @@ async function getCompanyParties(connection, companyName) {
 }
 
 // API Routes
+// Example route
+app.get("/", (req, res) => {
+  res.send("Hello, Server HTTPS is running 🚀");
+});
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -2211,77 +2221,29 @@ app.post("/api/punch-in", async (req, res) => {
     });
   }
 });
-
-// Start server
-app.listen(PORT, async () => {
+http.createServer(app).listen(80, () => {
   console.clear();
   console.log("\n" + "=".repeat(70));
   console.log("🔷 TALLY CONNECT API SERVER STARTING... on odbc 9000 port");
   console.log("Node is running in Port:", PORT);
   console.log("\n" + "=".repeat(70));
-  console.log("🚀 TALLY CONNECT API SERVER");
-  console.log("=".repeat(70));
-  console.log(`\n📦 Environment: ${NODE_ENV}`);
-  console.log(`🌐 Server running on: http://localhost:${PORT}`);
-  console.log(`\n📊 Tally ODBC Configuration:`);
-  console.log(`   DSN: ${TALLY_CONFIG.dsn}`);
-  console.log(`   Host: ${TALLY_CONFIG.host}`);
-  console.log(`   Port: ${TALLY_CONFIG.port}`);
-  console.log(`\n💾 MongoDB Configuration:`);
-  console.log(`   Status: ${MONGO_URL ? "Configured" : "Not configured"}`);
-  console.log(`   Database: ${MONGO_DB}`);
-  console.log("\n" + "=".repeat(70));
-  console.log("⚠️  IMPORTANT: Active Company Detection");
-  console.log("=".repeat(70));
-  console.log(
-    "• Tally ODBC returns the company whose data is ACTUALLY accessible",
-  );
-  console.log(
-    "• In Gateway screen, the SELECTED/HIGHLIGHTED company is the active one",
-  );
-  console.log("• The system will detect which company you have selected");
-  console.log('• Click "Sync Active Company" to sync the selected company');
-  console.log("=".repeat(70));
-  console.log("\n📡 Available API Endpoints:");
-  console.log("=".repeat(70));
-  console.log("\n✅ Health & Testing:");
-  console.log(`   GET  http://localhost:${PORT}/api/health`);
-  console.log(`   GET  http://localhost:${PORT}/api/test-mongo`);
-  console.log("\n🏢 Company Management:");
-  console.log(
-    `   GET  http://localhost:${PORT}/api/active-company          ← Get currently selected company`,
-  );
-  console.log(
-    `   GET  http://localhost:${PORT}/api/companies                ← Get all synced companies (MongoDB)`,
-  );
-  console.log(
-    `   GET  http://localhost:${PORT}/api/company/:companyName     ← Get specific company data`,
-  );
-  console.log("\n🔄 Sync Operations:");
-  console.log(
-    `   POST http://localhost:${PORT}/api/sync-active-company      ← Sync currently selected company`,
-  );
-  console.log(
-    `   POST http://localhost:${PORT}/api/send-order               ← Send order email (payload POST)`,
-  );
-  console.log(`\n📊 Data Queries (MongoDB):`);
-  console.log(`   GET  http://localhost:${PORT}/api/ledgers/:companyName`);
-  console.log(`   GET  http://localhost:${PORT}/api/stocks/:companyName`);
-  console.log(`   GET  http://localhost:${PORT}/api/parties/:companyName`);
-  console.log("\n🔧 Maintenance:");
-  console.log(
-    `   POST http://localhost:${PORT}/api/cleanup-old-records      ← Clean up old date fields`,
-  );
-  console.log("\n" + "=".repeat(70));
-  console.log("✨ Server is ready to accept requests!");
+  console.log("🌐 Public URL: https://api.cochintraderstirur.linkpc.net");
+  console.log("🌐 Public URL: https://tally.cochintraderstirur.linkpc.net");
+  console.log("🌐 Public URL: https://cochintraderstirur.linkpc.net");
   console.log("=".repeat(70) + "\n");
 
-  try {
+  (async () => {
     await connectToMongo();
-  } catch (err) {
-    console.warn("Starting without MongoDB connection\n");
-  }
+  })();
 });
+
+app.listen(80, () => console.log(`Server running on port ${PORT}`));
+
+// https.createServer(sslOptions, app).listen(443, () => {});
+// // Start server
+// app.listen(PORT, async () => {
+
+// });
 
 process.on("SIGINT", async () => {
   console.log("\nShutting down gracefully...");
