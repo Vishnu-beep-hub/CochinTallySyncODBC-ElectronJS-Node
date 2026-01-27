@@ -6,7 +6,7 @@
     <title>Parties — Tally Connect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=balance,checkbook,dashboard,diversity_3,inventory_2,pages,sheets_rtl" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=balance,cached,checkbook,dashboard,database,delete,diversity_3,inventory_2,note_stack,pages,sheets_rtl,visibility" />
     <script src="dark.js"></script>
   </head>
   <body class="h-full bg-slate-50 text-slate-800">
@@ -36,7 +36,7 @@
           </a>
           <div style="color:#93c5fd; font-size:11px; font-weight:600; margin:16px 0 8px 0;">COMPANY DATA</div>
           <a href="ledgers.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;">
-            <span class="material-symbols-outlined" style="font-size:20px;">checkbook</span>
+            <span class="material-symbols-outlined" style="font-size:20px;">note_stack</span>
             <span>Ledgers</span>
           </a>
           <a href="parties.html" style="display:flex; align-items:center; gap:10px; padding:10px; border-radius:6px; color:#dbeafe; text-decoration:none;background:#2563eb;">
@@ -141,7 +141,7 @@
         try{ localStorage.removeItem('companiesList') }catch(e){}
 
         try{
-          const res = await fetch('http://www.cochintraderstirur.linkpc.net/api/company-names', {
+          const res = await fetch('http://localhost:3000/api/company-names', {
             headers: {
               "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
             }
@@ -176,7 +176,7 @@
       }
 
       function classifyPartyPrimary(p){
-        const primary = (p['$_PrimaryGroup'] || p.PrimaryGroup || p.Primary || p.PartyType || '').toString().trim().toLowerCase()
+        const primary = (p['_PrimaryGroup'] || p['$_PrimaryGroup'] || p.PrimaryGroup || p.Primary || p.PartyType || '').toString().trim().toLowerCase()
         if (!primary) return 'Other'
         if (primary.includes('sundry debtor')) return 'Sundry Debtors'
         if (primary.includes('sundry creditor')) return 'Sundry Creditors'
@@ -231,7 +231,7 @@
 
               const name = p.PartyName || p.$Name || p.Name || p.LedgerName || 'Unnamed'
               const parent = p.Parent || p.PartyType || p.$Parent || ''
-              const primary = p['$_PrimaryGroup'] || p.PrimaryGroup || p.Primary || ''
+              const primary = p['_PrimaryGroup'] || p['$_PrimaryGroup'] || p.PrimaryGroup || p.Primary || ''
               const closing = p.ClosingBalance ?? p.Balance ?? p.$ClosingBalance ?? null
               const opening = p.OpeningBalance ?? p.$OpeningBalance ?? p.Opening ?? null
               const address = p.Address || p.$Address || ''
@@ -272,14 +272,21 @@
           sectionsMap[cat] = { section, body, header }
         })
 
-        // populate categorySelect
+        // populate categorySelect (always include Debtors/Creditors)
         const categorySelect = document.getElementById('categorySelect')
         if(categorySelect){
+          const count = (cat)=> (groups[cat]||[]).length
           categorySelect.innerHTML = '<option disabled value="">All Categories</option>'
-          Object.keys(sectionsMap).forEach(cat=>{
+          ;['Sundry Debtors','Sundry Creditors'].forEach(cat=>{
             const opt = document.createElement('option')
             opt.value = cat
-            opt.textContent = cat + ' (' + (groups[cat]||[]).length + ')'
+            opt.textContent = cat + ' (' + count(cat) + ')'
+            categorySelect.appendChild(opt)
+          })
+          Object.keys(sectionsMap).filter(cat=> !['Sundry Debtors','Sundry Creditors'].includes(cat)).forEach(cat=>{
+            const opt = document.createElement('option')
+            opt.value = cat
+            opt.textContent = cat + ' (' + count(cat) + ')'
             categorySelect.appendChild(opt)
           })
           // when a category is selected, expand that section and collapse others
@@ -376,22 +383,32 @@
           </div>
         `
         try{
-          const res = await fetch('http://www.cochintraderstirur.linkpc.net/api/parties/' + encodeURIComponent(name), {
+          const res = await fetch('http://localhost:3000/api/company/' + encodeURIComponent(name) + '/parties', {
             headers: {
               "x-api-key": "2a54ff0c0b16c5eccf1f88c633119f3c37c3b9a697c89e875a48b435400bb755"
             }
           })
           const json = await res.json()
-          const parties = json.data || json
-          lastParties = parties || []
+          const parties = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : [])
+          lastParties = parties
           renderParties(lastParties)
         }catch(err){ partiesContainer.innerHTML = '<div class="p-4 text-sm text-red-500">Error: '+(err.message||err)+'</div>' }
       })
 
 
       ;(async ()=>{
+        const params = new URLSearchParams(window.location.search || '')
+        const initialCompany = params.get('company')
         const list = await ensureCompanies()
         populateCompanySelect(list)
+        if(initialCompany){
+          const match = list.find(c => (c.companyName||'').toLowerCase() === initialCompany.toLowerCase())
+          if(match){
+            companySelect.value = match.companyName
+            companySelect.dispatchEvent(new Event('change'))
+            return
+          }
+        }
         if(list && list.length>0){
           companySelect.value = list[0].companyName || (list[0].companyDetails && list[0].companyDetails.companyName) || ''
           companySelect.dispatchEvent(new Event('change'))

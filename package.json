@@ -32,6 +32,8 @@
       "server.js",
       "renderer/**/*",
       "build/**/*",
+      "firebase/**/*",
+      ".env",
       "package.json",
       "!node_modules/.cache/**"
     ],
@@ -42,7 +44,7 @@
       },
       {
         "from": ".env",
-        "to": "env"
+        "to": ".env"
       }
     ],
     "nsis": {
@@ -59,6 +61,7 @@
   },
   "scripts": {
     "start": "electron .",
+    "dev": "electron .",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "postinstall": "echo 'Install finished'"
@@ -68,18 +71,19 @@
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
     "get-port": "^7.1.0",
-    "http": "^0.0.1-security",
     "https": "^1.0.0",
-    "mongodb": "^7.0.0",
-    "ngrok": "^5.0.0-beta.2",
+    "firebase": "^11.0.0",
     "nodemailer": "^6.9.3",
     "odbc": "^2.4.0",
+    "portfinder": "^1.0.38",
     "react-dom": "^18.2.0",
     "react-native-web": "^0.18.12"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "electron": "^26.0.0",
     "electron-builder": "^26.0.12",
+    "localtunnel": "^2.0.2",
     "nodemon": "^3.1.11"
   }
 }

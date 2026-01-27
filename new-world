@@ -1,0 +1,718 @@
+// // Create order and reduce stock batches
+// app.post("/api/orders/:companyName/:shopName", async (req, res) => {
+//   try {
+//     const { companyName, shopName } = req.params;
+//     const orderItems = req.body;
+
+//     // Validate inputs
+//     if (!companyName || !shopName) {
+//       return res.status(400).json({
+//         success: false,
+//         error: "companyName and shopName are required",
+//       });
+//     }
+
+//     if (!Array.isArray(orderItems) || orderItems.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         error: "Request body must be a non-empty array of items",
+//       });
+//     }
+
+//     Validate each item has stockItem and pieces
+//     for (const item of orderItems) {
+//       if (!item.stockItem) {
+//         return res.status(400).json({
+//           success: false,
+//           error: "Each item must have a stockItem field",
+//         });
+//       }
+//       if (!item.pieces || typeof item.pieces !== "object") {
+//         return res.status(400).json({
+//           success: false,
+//           error: "Each item must have a pieces object",
+//         });
+//       }
+//     }
+
+//     const mongo = await connectToMongo();
+//     if (!mongo) {
+//       return res
+//         .status(503)
+//         .json({ success: false, error: "MongoDB not configured" });
+//     }
+
+//     const batchesCol = mongo.collection("stockBatches");
+
+//     // Process each order item
+//     const processedItems = [];
+
+//     for (const item of orderItems) {
+//       const { stockItem, pieces } = item;
+
+//       // Find batch document for this company and stock item
+//       const batchDoc = await batchesCol.findOne({ companyName, stockItem });
+
+//       if (!batchDoc) {
+//         return res.status(404).json({
+//           success: false,
+//           error: `No batches found for stockItem "${stockItem}" in company "${companyName}"`,
+//         });
+//       }
+
+//       // Process pieces and update batches
+//       const itemBatches = batchDoc.batches || [];
+//       const orderedBatches = [];
+
+//       // Iterate through requested pieces (batch sizes and quantities)
+//       for (const [batchSizeKey, requestedQty] of Object.entries(pieces)) {
+//         const batchSize = parseInt(batchSizeKey);
+//         const quantity = parseInt(requestedQty);
+
+//         if (quantity <= 0) continue; // Skip zero quantities
+
+//         // Find batch with matching size
+//         const matchingBatch = itemBatches.find((b) => b.size === batchSize);
+
+//         if (!matchingBatch) {
+//           return res.status(400).json({
+//             success: false,
+//             error: `Batch size ${batchSize} not found for stockItem "${stockItem}"`,
+//           });
+//         }
+
+//         if (matchingBatch.quantity < quantity) {
+//           return res.status(400).json({
+//             success: false,
+//             error: `Insufficient quantity for batch size ${batchSize}. Available: ${matchingBatch.quantity}, Requested: ${quantity}`,
+//           });
+//         }
+
+//         orderedBatches.push({
+//           size: batchSize,
+//           orderedQty: quantity,
+//           availableQty: matchingBatch.quantity,
+//         });
+//       }
+
+//       if (orderedBatches.length === 0) {
+//         return res.status(400).json({
+//           success: false,
+//           error: `No valid pieces provided for stockItem "${stockItem}"`,
+//         });
+//       }
+
+//       // Update batches in MongoDB
+//       for (const orderedBatch of orderedBatches) {
+//         await batchesCol.updateOne(
+//           { companyName, stockItem, "batches.size": orderedBatch.size },
+//           { $inc: { "batches.$.quantity": -orderedBatch.orderedQty } },
+//         );
+//       }
+//       const totalOrderedForItem = orderedBatches.reduce(
+//         (sum, b) => sum + b.orderedQty,
+//         0,
+//       );
+//       await batchesCol.updateOne(
+//         { companyName, stockItem },
+//         {
+//           $inc: { totalQuantity: -totalOrderedForItem },
+//           $set: { updatedAt: new Date() },
+//         },
+//       );
+//       const _updatedDoc = await batchesCol.findOne(
+//         { companyName, stockItem },
+//         { projection: { totalQuantity: 1, batches: 1, updatedAt: 1 } },
+//       );
+//       const _batchCount = (_updatedDoc?.batches || []).length;
+//       const _totalQty = _updatedDoc?.totalQuantity || 0;
+//       const _updatedAt = _updatedDoc?.updatedAt;
+
+//       processedItems.push({
+//         stockItem,
+//         orderedBatches,
+//         totalPieces: orderedBatches.reduce((sum, b) => sum + b.orderedQty, 0),
+//       });
+//       if (processedItems.length > 0) {
+//         processedItems[processedItems.length - 1].totals = {
+//           totalQuantity: _totalQty,
+//           batchCount: _batchCount,
+//           updatedAt: _updatedAt,
+//         };
+//       }
+//     }
+
+//     // Calculate total pieces
+//     const totalCountAllPieces = processedItems.reduce(
+//       (sum, item) => sum + item.totalPieces,
+//       0,
+//     );
+
+//     // Build and send email
+//     try {
+//       const transporter = getMailTransporter();
+//       if (!transporter) {
+//         console.warn("Mail transporter not configured, skipping email");
+//       } else {
+//         // Build email HTML with table
+//         let tableRows = "";
+
+//         for (const item of processedItems) {
+//           const batchSizes = item.orderedBatches
+//             .map((b) => b.size)
+//             .sort((a, b) => a - b)
+//             .join(", ");
+
+//           tableRows += `<tr>
+//             <td style="padding:8px;border:1px solid #ddd">${item.stockItem}</td>
+//             <td style="padding:8px;border:1px solid #ddd;text-align:center">${batchSizes}</td>
+//             <td style="padding:8px;border:1px solid #ddd;text-align:right">
+//               ${item.orderedBatches.map((b) => `Size ${b.size}: ${b.orderedQty}`).join("<br/>")}
+//             </td>
+//           </tr>`;
+//         }
+
+//         const html = `
+//           <div style="font-family:Arial,sans-serif;max-width:800px;margin:0 auto;background:#f9f9f9;padding:20px;border-radius:8px">
+//             <h2 style="color:#333;border-bottom:3px solid #2196F3;padding-bottom:10px">Order Confirmation</h2>
+
+//             <div style="background:white;padding:15px;margin:15px 0;border-radius:4px;border-left:4px solid #2196F3">
+//               <p style="margin:5px 0"><strong>Company:</strong> ${companyName}</p>
+//               <p style="margin:5px 0"><strong>Shop Name:</strong> ${shopName}</p>
+//               <p style="margin:5px 0"><strong>Total Count:</strong> <span style="font-size:18px;color:#2196F3;font-weight:bold">${totalCountAllPieces}</span></p>
+//               <p style="margin:5px 0"><strong>Order Date:</strong> ${new Date().toLocaleString()}</p>
+//             </div>
+
+//             <h3 style="color:#333;margin-top:20px">Order Items</h3>
+//             <table style="border-collapse:collapse;width:100%;background:white">
+//               <thead>
+//                 <tr style="background:#2196F3;color:white">
+//                   <th style="padding:10px;border:1px solid #ddd;text-align:left">Stock Item</th>
+//                   <th style="padding:10px;border:1px solid #ddd;text-align:center">Batch Sizes</th>
+//                   <th style="padding:10px;border:1px solid #ddd;text-align:right">Quantity by Batch</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 ${tableRows}
+//               </tbody>
+//             </table>
+
+//             <div style="background:#e3f2fd;padding:15px;margin-top:20px;border-radius:4px;border-left:4px solid #2196F3">
+//               <p style="margin:0;color:#333"><strong>✓ Order has been successfully processed and stock batches have been reduced.</strong></p>
+//             </div>
+
+//             <p style="font-size:12px;color:#999;margin-top:20px;text-align:center">This is an automated message. Please do not reply.</p>
+//           </div>
+//         `;
+
+//         const textLines = [];
+//         textLines.push("=".repeat(50));
+//         textLines.push("ORDER CONFIRMATION");
+//         textLines.push("=".repeat(50));
+//         textLines.push(`Company: ${companyName}`);
+//         textLines.push(`Shop: ${shopName}`);
+//         textLines.push(`Total Count: ${totalCountAllPieces}`);
+//         textLines.push(`Date: ${new Date().toLocaleString()}`);
+//         textLines.push("");
+//         textLines.push("ORDER ITEMS:");
+//         textLines.push("-".repeat(50));
+
+//         for (const item of processedItems) {
+//           textLines.push(`\nStock Item: ${item.stockItem}`);
+//           for (const batch of item.orderedBatches) {
+//             textLines.push(
+//               `  - Batch Size ${batch.size}: ${batch.orderedQty} units`,
+//             );
+//           }
+//         }
+
+//         textLines.push("\n" + "=".repeat(50));
+//         textLines.push("Order processed successfully");
+//         textLines.push("=".repeat(50));
+
+//         const mailOptions = {
+//           from: `${MAIL_FROM_NAME} <${MAIL_FROM_EMAIL}>`,
+//           to: MAIL_TO_EMAIL || "orders.cochintraders@outlook.com",
+//           subject: `Order: Shop: ${shopName} — Company: ${companyName}`,
+//           text: textLines.join("\n"),
+//           html,
+//         };
+
+//         const info = await transporter.sendMail(mailOptions);
+//         console.log("Order confirmation email sent:", info && info.messageId);
+//       }
+//     } catch (mailErr) {
+//       console.error("Error sending order email:", mailErr.message);
+//       // Don't fail the entire request if email fails
+//     }
+
+//     // Return success response
+//     res.json({
+//       success: true,
+//       message: `Order placed and stock batches updated successfully for ${shopName}`,
+//       companyName,
+//       items: processedItems,
+//     });
+//   } catch (err) {
+//     console.error("/api/orders error:", err.message);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+
+// // Get stock batches for a particular stock item
+// app.get("/api/batches/:companyName/:stockItem", async (req, res) => {
+//   try {
+//     const { companyName, stockItem } = req.params;
+
+//     if (!companyName) {
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "companyName is required" });
+//     }
+//     if (!stockItem) {
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "stockItem is required" });
+//     }
+
+//     const mongo = await connectToMongo();
+//     if (!mongo) {
+//       return res
+//         .status(503)
+//         .json({ success: false, error: "MongoDB not configured" });
+//     }
+
+//     const col = mongo.collection("stockBatches");
+//     const doc = await col.findOne({ companyName, stockItem });
+
+//     if (!doc) {
+//       return res.json({
+//         success: true,
+//         found: false,
+//         message: `No batches found for ${stockItem} in ${companyName}`,
+//         companyName,
+//         stockItem,
+//         batches: [],
+//       });
+//     }
+
+//     res.json({
+//       success: true,
+//       found: true,
+//       companyName: doc.companyName,
+//       stockItem: doc.stockItem,
+//       batches: doc.batches || [],
+//       totalQuantity: doc.totalQuantity || 0,
+//       batchCount: (doc.batches || []).length,
+//       createdAt: doc.createdAt,
+//       updatedAt: doc.updatedAt,
+//     });
+//   } catch (err) {
+//     console.error("/api/batches/:companyName/:stockItem error:", err.message);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+
+// // Get all stock batches for a particular company
+// app.get("/api/get-batches/:companyName", async (req, res) => {
+//   try {
+//     const { companyName } = req.params;
+
+//     if (!companyName) {
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "companyName is required" });
+//     }
+
+//     const mongo = await connectToMongo();
+//     if (!mongo) {
+//       return res
+//         .status(503)
+//         .json({ success: false, error: "MongoDB not configured" });
+//     }
+
+//     const col = mongo.collection("stockBatches");
+//     const docs = await col
+//       .find({ companyName })
+//       .sort({ stockItem: 1 })
+//       .toArray();
+
+//     if (!docs || docs.length === 0) {
+//       return res.json({
+//         success: true,
+//         found: false,
+//         message: `No batches found for company: ${companyName}`,
+//         companyName,
+//         count: 0,
+//         data: [],
+//       });
+//     }
+
+//     const formattedData = docs.map((doc) => ({
+//       stockItem: doc.stockItem,
+//       batches: doc.batches || [],
+//       totalQuantity: doc.totalQuantity || 0,
+//       batchCount: (doc.batches || []).length,
+//       createdAt: doc.createdAt,
+//       updatedAt: doc.updatedAt,
+//     }));
+
+//     res.json({
+//       success: true,
+//       found: true,
+//       companyName,
+//       count: docs.length,
+//       data: formattedData,
+//     });
+//   } catch (err) {
+//     console.error("/api/get-batches/:companyName error:", err.message);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+
+// // Get stock batches for a particular stock item
+// app.get("/api/batches/:companyName/:stockItem", async (req, res) => {
+//   try {
+//     const { companyName, stockItem } = req.params;
+
+//     if (!companyName) {
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "companyName is required" });
+//     }
+//     if (!stockItem) {
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "stockItem is required" });
+//     }
+
+//     const mongo = await connectToMongo();
+//     if (!mongo) {
+//       return res
+//         .status(503)
+//         .json({ success: false, error: "MongoDB not configured" });
+//     }
+
+//     const col = mongo.collection("stockBatches");
+//     const doc = await col.findOne({ companyName, stockItem });
+
+//     if (!doc) {
+//       return res.json({
+//         success: true,
+//         found: false,
+//         message: `No batches found for ${stockItem} in ${companyName}`,
+//         companyName,
+//         stockItem,
+//         batches: [],
+//       });
+//     }
+
+//     res.json({
+//       success: true,
+//       found: true,
+//       companyName: doc.companyName,
+//       stockItem: doc.stockItem,
+//       batches: doc.batches || [],
+//       totalQuantity: doc.totalQuantity || 0,
+//       batchCount: (doc.batches || []).length,
+//       createdAt: doc.createdAt,
+//       updatedAt: doc.updatedAt,
+//     });
+//   } catch (err) {
+//     console.error("/api/batches/:companyName/:stockItem error:", err.message);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+
+// // Send collection payload as email (new endpoint)
+// app.post("/api/send-collection", async (req, res) => {
+//   try {
+//     const payload = req.body;
+//     if (!payload)
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "Missing request payload" });
+
+//     const transporter = getMailTransporter();
+//     if (!transporter)
+//       return res
+//         .status(500)
+//         .json({ success: false, error: "Mail transporter not configured" });
+
+//     const type = payload.type || "";
+//     const shopName = payload.shopName || "Unknown Shop";
+//     const amount = payload.amount ?? "";
+//     const empId = payload.empId || "";
+//     const employeeName = payload.employeeName || "";
+//     const location = payload.location || null;
+//     const timestamp = new Date().toLocaleString();
+
+//     // Build HTML body
+//     const html = `
+//       <div>
+//         <h2>Collection Notification — ${shopName}</h2>
+//         <p><strong>Type:</strong> ${type}</p>
+//         <p><strong>Employee ID:</strong> ${empId}</p>
+//         <p><strong>Employee Name:</strong> ${employeeName}</p>
+//         <p><strong>Location:</strong> ${location ? JSON.stringify(location) : ""}</p>
+//         <pre style="background:#f6f6f6;padding:10px;border-radius:4px">${JSON.stringify(payload, null, 2)}</pre>
+//         <p style="font-size:12px;color:#666">Sent at ${timestamp}</p>
+//       </div>
+//     `;
+
+//     // Plain text fallback
+//     const textLines = [];
+//     textLines.push(`Collection Notification — ${shopName}`);
+//     textLines.push(`Type: ${type}`);
+//     textLines.push(`Amount: ${amount}`);
+//     if (empId) textLines.push(`Employee ID: ${empId}`);
+//     if (employeeName) textLines.push(`Employee Name: ${employeeName}`);
+//     if (location) textLines.push(`Location: ${JSON.stringify(location)}`);
+//     textLines.push("Full payload:");
+//     textLines.push(JSON.stringify(payload, null, 2));
+//     textLines.push(`Sent at ${timestamp}`);
+
+//     const mailOptions = {
+//       from: `${MAIL_FROM_NAME} <${MAIL_FROM_EMAIL}>`,
+//       to: MAIL_TO_EMAIL || "orders.cochintraders@outlook.com",
+//       subject: `Collection: ${shopName}`,
+//       text: textLines.join("\n"),
+//       html,
+//     };
+
+//     const info = await transporter.sendMail(mailOptions);
+//     console.log("Collection email sent:", info && info.messageId);
+
+//     res.json({ success: true, messageId: info && info.messageId });
+//   } catch (err) {
+//     console.error("Error sending collection email:", err.message);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+
+// // Send order email endpoint
+// app.post("/api/send-order", async (req, res) => {
+//   try {
+//     const payload = req.body;
+//     if (!payload)
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "Missing request payload" });
+
+//     const transporter = getMailTransporter();
+//     if (!transporter)
+//       return res
+//         .status(500)
+//         .json({ success: false, error: "Mail transporter not configured" });
+
+//     const shopName = payload.shopName || "Unknown Shop";
+//     const companyName = payload.companyName || "";
+//     const items = Array.isArray(payload.items) ? payload.items : [];
+//     const contact = payload.contact || {};
+//     const notes = payload.notes || "";
+
+//     // Build HTML table for items
+//     const itemsRows = items
+//       .map(
+//         (it) => `
+//       <tr>
+//         <td style="padding:6px;border:1px solid #ddd">${it.id || ""}</td>
+//         <td style="padding:6px;border:1px solid #ddd">${it.name || ""}</td>
+//         <td style="padding:6px;border:1px solid #ddd;text-align:right">${it.pieces ?? 0}</td>
+//         <td style="padding:6px;border:1px solid #ddd;text-align:right">${it.sets ?? 0}</td>
+//         <td style="padding:6px;border:1px solid #ddd;text-align:right">${it.price ?? 0}</td>
+//       </tr>`,
+//       )
+//       .join("");
+
+//     const html = `
+//       <div>
+//         <h2>New Order — ${shopName}</h2>
+//         <p><strong>Company:</strong> ${companyName}</p>
+//         <p><strong>Contact:</strong> ${contact.phone || ""}</p>
+//         <table style="border-collapse:collapse;width:100%;margin-top:12px">
+//           <thead>
+//             <tr>
+//               <th style="padding:6px;border:1px solid #ddd;text-align:left">Item ID</th>
+//               <th style="padding:6px;border:1px solid #ddd;text-align:left">Name</th>
+//               <th style="padding:6px;border:1px solid #ddd;text-align:right">Pieces</th>
+//               <th style="padding:6px;border:1px solid #ddd;text-align:right">Sets</th>
+//               <th style="padding:6px;border:1px solid #ddd;text-align:right">Price</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             ${itemsRows}
+//           </tbody>
+//         </table>
+//         <p style="margin-top:12px"><strong>Notes:</strong> ${notes}</p>
+//         <p style="font-size:12px;color:#666">Sent at ${new Date().toLocaleString()}</p>
+//       </div>
+//     `;
+
+//     // Plain text fallback
+//     const textLines = [];
+//     textLines.push(`New Order — ${shopName}`);
+//     textLines.push(`Company: ${companyName}`);
+//     textLines.push(`Contact: ${contact.phone || ""}`);
+//     textLines.push("Items:");
+//     items.forEach((it) =>
+//       textLines.push(
+//         ` - ${it.id || ""} | ${it.name || ""} | pieces:${it.pieces ?? 0} | sets:${it.sets ?? 0} | price:${it.price ?? 0}`,
+//       ),
+//     );
+//     textLines.push(`Notes: ${notes}`);
+//     textLines.push(`Sent at ${new Date().toLocaleString()}`);
+
+//     const mailOptions = {
+//       from: `${MAIL_FROM_NAME} <${MAIL_FROM_EMAIL}>`,
+//       to: MAIL_TO_EMAIL,
+//       subject: `Order: ${shopName} ${companyName ? `— ${companyName}` : ""}`,
+//       text: textLines.join("\n"),
+//       html,
+//     };
+
+//     const info = await transporter.sendMail(mailOptions);
+//     console.log("Order email sent:", info && info.messageId);
+
+//     res.json({ success: true, messageId: info && info.messageId });
+//   } catch (err) {
+//     console.error("Error sending order email:", err.message);
+//     res.status(500).json({ success: false, error: err.message });
+//   }
+// });
+
+// // MAIN SYNC ENDPOINT: Sync whatever company is currently ACTIVE in Tally
+// app.post("/api/sync-active-company", async (req, res) => {
+//   let connection;
+//   try {
+//     console.log("\n" + "=".repeat(60));
+//     console.log("API REQUEST: /api/sync-active-company");
+//     console.log("=".repeat(60));
+
+//     // Connect to Tally ODBC
+//     console.log("Connecting to Tally ODBC...");
+//     connection = await odbc.connect(TALLY_CONFIG.connectionString);
+//     console.log("✓ Connected to Tally\n");
+
+//     // Get the currently active company in Tally
+//     const activeCompany = await getActiveCompany(connection);
+
+//     if (!activeCompany) {
+//       await connection.close();
+//       console.warn("❌ No active company found in Tally");
+//       return res.status(404).json({
+//         success: false,
+//         error:
+//           "No active company found in Tally. Please open a company in Tally Prime.",
+//       });
+//     }
+
+//     const activeCompanyName = activeCompany.CompanyName;
+//     console.log(`Active Company in Tally: ${activeCompanyName}`);
+//     console.log("Fetching data...");
+
+//     // Fetch data for the active company
+//     const ledgers = await getCompanyLedgers(connection, activeCompanyName);
+//     const stocks = await getCompanyStocks(connection, activeCompanyName);
+//     const parties = await getCompanyParties(connection, activeCompanyName);
+
+//     await connection.close();
+
+//     console.log(
+//       `✓ Data fetched: Ledgers=${ledgers.length}, Stocks=${stocks.length}, Parties=${parties.length}`,
+//     );
+
+//     // Prepare data object
+//     const data = {
+//       companyName: activeCompanyName,
+//       companyDetails: {
+//         guid: activeCompany.CompanyGUID || null,
+//         companyNumber: activeCompany.CompanyNumber || null,
+//         address: activeCompany.Address || null,
+//         email: activeCompany.Email || null,
+//         phone: activeCompany.Phone || null,
+//         startDate: activeCompany.StartDate || null,
+//         booksFrom: activeCompany.BooksFrom || null,
+//       },
+//       ledgers: ledgers || [],
+//       stocks: stocks || [],
+//       parties: parties || [],
+//     };
+
+//     // Save to MongoDB
+//     let mongo = null;
+//     try {
+//       mongo = await connectToMongo();
+//     } catch (err) {
+//       console.warn("MongoDB not available, continuing without it");
+//     }
+
+//     if (mongo) {
+//       try {
+//         const col = mongo.collection("companiesData");
+
+//         console.log("Saving to MongoDB...");
+//         console.log(`Company: ${data.companyName}`);
+
+//         const doc = {
+//           companyName: data.companyName,
+//           companyDetails: data.companyDetails,
+//           ledgers: data.ledgers,
+//           stocks: data.stocks,
+//           parties: data.parties,
+//           fetchedAt: new Date(),
+//           lastSyncedAt: new Date().toISOString(),
+//         };
+
+//         const result = await col.updateOne(
+//           { companyName: data.companyName },
+//           {
+//             $set: doc,
+//             $setOnInsert: { firstSyncedAt: new Date() },
+//           },
+//           { upsert: true },
+//         );
+
+//         console.log(
+//           `✓ Data saved to MongoDB (${result.modifiedCount > 0 ? "updated existing" : "inserted new"})\n`,
+//         );
+
+//         const totalCompanies = await col.countDocuments();
+//         console.log(`📊 Total companies in database: ${totalCompanies}`);
+//       } catch (err) {
+//         console.error("✗ Error saving to MongoDB:", err.message);
+//       }
+//     }
+
+//     const summary = {
+//       companyName: data.companyName,
+//       totalLedgers: data.ledgers.length,
+//       totalStocks: data.stocks.length,
+//       totalParties: data.parties.length,
+//       syncedAt: new Date().toISOString(),
+//     };
+
+//     console.log("SUMMARY:", summary);
+//     console.log("=".repeat(60) + "\n");
+
+//     res.json({
+//       success: true,
+//       message: `Successfully synced "${data.companyName}"`,
+//       summary,
+//       data,
+//     });
+//   } catch (err) {
+//     console.error("✗ API Error:", err.message);
+//     if (connection) {
+//       try {
+//         await connection.close();
+//       } catch (closeErr) {
+//         console.error("Error closing connection:", closeErr.message);
+//       }
+//     }
+//     res.status(500).json({
+//       success: false,
+//       error: err.message || "Internal server error",
+//     });
+//   }
+// });

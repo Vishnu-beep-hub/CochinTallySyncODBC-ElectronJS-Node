@@ -1,7 +1,0 @@
-{
-  "expo": {
-    "name": "Cochin Traders",
-    "slug": "cochin-traders",
-    "platforms": ["ios","android","web"]
-  }
-}
